@@ -79,7 +79,7 @@ var exampleVar = new ExampleClass(new OtherSerializable());
 using (Message message = new Message(Tag))
 {
     // Process the data to be sent
-    message.Process(exampleVar);
+    message.Process(ref exampleVar);
 
     FlareNetwork.SendMessage(message, SendMode.Reliable);
 }

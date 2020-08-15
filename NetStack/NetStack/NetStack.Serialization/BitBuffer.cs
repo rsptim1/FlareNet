@@ -594,11 +594,6 @@ namespace NetStack.Serialization
 			return builder.ToString();
 		}
 
-		public BitBuffer Add<T>(T value)
-		{
-			return this;
-		}
-
 		public override string ToString()
 		{
 			StringBuilder builder = new StringBuilder();

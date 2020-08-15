@@ -13,6 +13,7 @@ FlareNet is intended to be a set of high-level tools built on ENet C#, providing
 - [ ] Unity extension
 - [ ] Stride extension
 - [ ] UPNP
+- [ ] Logging
 - [ ] Documentation
 
 # Building

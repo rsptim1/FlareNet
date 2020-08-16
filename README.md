@@ -9,6 +9,7 @@ FlareNet is intended to be a set of high-level tools built on ENet C#, providing
 - [ ] Server-client structure
 - [ ] Encryption
 - [ ] Simplified serializable objects
+- [ ] Client metadata syncing
 - [ ] Network-synced entities
 - [ ] Unity extension
 - [ ] Stride extension

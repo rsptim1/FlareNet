@@ -46,8 +46,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Debug\ConsoleLoggerOutput.cs" />
+    <Compile Include="Debug\ILoggerOutput.cs" />
     <Compile Include="Debug\NetworkLogger.cs" />
     <Compile Include="ENet.cs" />
+    <Compile Include="FlareNetwork.cs" />
+    <Compile Include="MessageHandler.cs" />
     <Compile Include="Serialization\ISerializable.cs" />
     <Compile Include="Serialization\Message.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

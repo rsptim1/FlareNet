@@ -6,8 +6,10 @@ namespace FlareNet
 {
 	public class Message : IDisposable
 	{
+		public int Length => Buffer.Length;
+
 		public readonly ushort Tag;
-		public readonly BitBuffer Buffer;
+		internal readonly BitBuffer Buffer;
 
 		// We're writing to the buffer
 		private readonly bool writing;
@@ -16,10 +18,12 @@ namespace FlareNet
 		/// Create a Message to read from a buffer.
 		/// </summary>
 		/// <param name="buffer">The buffer to read from</param>
-		public Message(BitBuffer buffer)
+		/// <param name="length">The length of the buffer to read</param>
+		internal Message(byte[] buffer, int length)
 		{
-			Buffer = buffer;
-			Tag = buffer.ReadUShort();
+			BitBuffer Buffer = new BitBuffer();
+			Buffer.FromArray(buffer, length);
+			Tag = Buffer.ReadUShort();
 
 			writing = false;
 		}
@@ -34,6 +38,13 @@ namespace FlareNet
 			Buffer.Add(Tag = tag);
 
 			writing = true;
+		}
+
+		internal byte[] GetBufferArray()
+		{
+			byte[] result = new byte[Length + 4];
+			Buffer.ToArray(result);
+			return result;
 		}
 
 		// TODO: Clean up this region into something less cancer

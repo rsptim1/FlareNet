@@ -4,7 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace FlareNet
+namespace FlareNet.Server
 {
 	public class Upnp
 	{

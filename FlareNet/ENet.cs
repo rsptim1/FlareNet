@@ -544,7 +544,7 @@ namespace ENet
             Native.enet_host_prevent_connections(nativeHost, (byte)(state ? 1 : 0));
         }
 
-        public void Broadcast(byte channelID, ref Packet packet)
+        public void Broadcast(byte channelID, Packet packet)
         {
             CheckCreated();
 
@@ -553,7 +553,7 @@ namespace ENet
             packet.NativeData = IntPtr.Zero;
         }
 
-        public void Broadcast(byte channelID, ref Packet packet, ref Peer[] peers)
+        public void Broadcast(byte channelID, Packet packet, ref Peer[] peers)
         {
             CheckCreated();
 

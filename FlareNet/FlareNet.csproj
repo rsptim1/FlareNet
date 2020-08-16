@@ -46,16 +46,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Client\FlareClient.cs" />
+    <Compile Include="Client\LocalFlareClient.cs" />
     <Compile Include="Debug\ConsoleLoggerOutput.cs" />
     <Compile Include="Debug\ILoggerOutput.cs" />
+    <Compile Include="Server\FlareClientManager.cs" />
+    <Compile Include="Client\IClient.cs" />
     <Compile Include="Debug\NetworkLogger.cs" />
     <Compile Include="ENet.cs" />
     <Compile Include="FlareNetwork.cs" />
-    <Compile Include="MessageHandler.cs" />
+    <Compile Include="Serialization\MessageHandler.cs" />
     <Compile Include="Serialization\ISerializable.cs" />
     <Compile Include="Serialization\Message.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Upnp.cs" />
+    <Compile Include="Server\FlareServer.cs" />
+    <Compile Include="Server\ServerConfig.cs" />
+    <Compile Include="Server\Upnp.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

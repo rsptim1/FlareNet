@@ -6,7 +6,9 @@ FlareNet is intended to be a set of high-level tools built on ENet C#, providing
 
 ### TODO
 
-- [ ] Server-client structure
+- [x] Server-client structure
+- [ ] Dedicated FlareSystem classes
+- [ ] Callback registration attribute
 - [ ] Encryption
 - [ ] Simplified serializable objects
 - [ ] Client metadata syncing
@@ -14,7 +16,7 @@ FlareNet is intended to be a set of high-level tools built on ENet C#, providing
 - [ ] Unity extension
 - [ ] Stride extension
 - [ ] UPNP
-- [ ] Logging
+- [x] Logging
 - [ ] Documentation
 
 # Building
@@ -22,19 +24,6 @@ FlareNet is intended to be a set of high-level tools built on ENet C#, providing
 I would like to say "just open the solution and build," but I don't think it's quite there yet.
 
 # Getting Started
-
-## Registering a message callback
-
-Each unique network tag, represented as a `ushort`, can have a single callback method to be invoked when a message with the respective tag is received from the server.
-
-```csharp
-using FlareNet;
-
-FlareClient.RegisterMessage((ushort)tag, (ServerMessageCallback) callback);
-
-// You must clean up after object is destroyed
-FlareClient.RemoveMessage((ushort)tag);
-```
 
 ## Processing a serializable object
 
@@ -64,6 +53,30 @@ class ExampleClass : ISerializable
 }
 ```
 
+## Registering a message callback
+
+Each unique network tag, represented as a `ushort`, can have a single callback method to be invoked when a message with the respective tag is received from the server.
+
+```csharp
+using FlareNet;
+
+ExampleClass exampleVar;
+
+void ExampleCallback(Message message, IClient client)
+{
+    // The message is incoming, so the variable is given a value
+    message.Process(ref exampleVar);
+}
+
+// ...
+
+// To add the tag and callback to be invoked
+FlareNetwork.RegisterCallback((ushort)tag, (ServerMessageCallback) exampleCallback);
+
+// To remove the callback so it is no longer invoked
+FlareNetwork.RemoveCallback((ushort)tag);
+```
+
 ## Sending a message
 
 The tag attached to the message must be a unique `ushort` as to distinguish the data being sent and to invoke the correct registered callback.
@@ -82,14 +95,7 @@ using (Message message = new Message(Tag))
     // Process the data to be sent
     message.Process(ref exampleVar);
 
-    FlareNetwork.SendMessage(message, SendMode.Reliable);
+    FlareNetwork.SendMessageReliable(message);
 }
 ```
 
-## Receiving a message
-
-After registering a tag and its callback, the registered method will be invoked when a message with the respective tag is received.
-
-```cs
-
-```

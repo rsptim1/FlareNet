@@ -40,6 +40,8 @@ namespace FlareNet
 		public static void Shutdown()
 		{
 			flareClient?.Disconnect();
+			FlareClientManager = null;
+			flareClient = null;
 		}
 
 		/// <summary>

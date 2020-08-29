@@ -33,14 +33,12 @@ namespace FlareNet.Client
 		{
 		}
 
-		public virtual void SendMessage(Message message, SendMode sendMode)
+		public virtual void SendMessage(Message message, byte channel)
 		{
 			// Create and send packet
-			using (Packet packet = default)
-			{
-				packet.Create(message.GetBufferArray(), sendMode);
-				Peer.Send((byte)sendMode, packet);
-			}
+			Packet packet = default;
+			packet.Create(message.GetBufferArray(), PacketFlags.Reliable);
+			Peer.Send(channel, ref packet);
 		}
 
 		public virtual void Disconnect()
@@ -48,9 +46,9 @@ namespace FlareNet.Client
 			Peer.DisconnectNow(0);
 		}
 
-		public void Send(byte sendMode, Packet packet)
+		public void Send(byte channel, Packet packet)
 		{
-			Peer.Send(sendMode, packet);
+			Peer.Send(channel, ref packet);
 		}
 	}
 }

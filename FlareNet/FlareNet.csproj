@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ENet-CSharp">
+      <HintPath>..\ENet\ENet-CSharp.dll</HintPath>
+    </Reference>
     <Reference Include="Open.Nat, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f22a6a4582336c76">
       <HintPath>..\packages\Open.NAT.2.1.0.0\lib\net45\Open.Nat.dll</HintPath>
       <Private>True</Private>
@@ -53,7 +56,6 @@
     <Compile Include="Server\FlareClientManager.cs" />
     <Compile Include="Client\IClient.cs" />
     <Compile Include="Logging\NetworkLogger.cs" />
-    <Compile Include="ENet.cs" />
     <Compile Include="FlareNetwork.cs" />
     <Compile Include="Serialization\MessageHandler.cs" />
     <Compile Include="Serialization\ISerializable.cs" />

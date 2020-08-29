@@ -13,6 +13,7 @@ namespace FlareNet.Server
 		public FlareServer(ServerConfig config, ushort port)
 		{
 			Config = config;
+			Library.Initialize();
 			StartServer(port);
 		}
 
@@ -25,14 +26,12 @@ namespace FlareNet.Server
 
 			//Initialize the host.
 			Host.Create(Address, Config.MaxConnections, 2);
-			Host.EnableCompression();
-
 
 			ClientManager = new FlareClientManager(Config.MaxConnections);
 			NetworkLogger.Log(Debug.NetworkLogEvent.ServerStart);
 		}
 
-		protected override void OnConnect(NetworkEvent e)
+		protected override void OnConnect(Event e)
 		{
 			Peer peer = e.Peer;
 
@@ -40,7 +39,7 @@ namespace FlareNet.Server
 			ClientManager.AddClient(new FlareClient(peer));
 		}
 
-		protected override void OnDisconnect(NetworkEvent e)
+		protected override void OnDisconnect(Event e)
 		{
 			Peer peer = e.Peer;
 
@@ -48,7 +47,7 @@ namespace FlareNet.Server
 			ClientManager.RemoveClient(peer.ID);
 		}
 
-		protected override void OnTimeout(NetworkEvent e)
+		protected override void OnTimeout(Event e)
 		{
 			Peer peer = e.Peer;
 
@@ -60,7 +59,7 @@ namespace FlareNet.Server
 		/// Called when the server receives a message from a client.
 		/// </summary>
 		/// <param name="networkEvent"></param>
-		protected override void OnMessageReceived(NetworkEvent networkEvent)
+		protected override void OnMessageReceived(Event networkEvent)
 		{
 			NetworkLogger.Log($"Packet from [{networkEvent.Peer.IP}] ({networkEvent.Peer.ID}) " +
 				$"on Channel [{networkEvent.ChannelID}] Length [{networkEvent.Packet.Length}]");
@@ -83,14 +82,12 @@ namespace FlareNet.Server
 		/// </summary>
 		/// <param name="message"></param>
 		/// <param name="sendMode"></param>
-		public override void SendMessage(Message message, SendMode sendMode)
+		public override void SendMessage(Message message, byte channel)
 		{
 			// Create packet and broadcast
-			using (Packet packet = default)
-			{
-				packet.Create(message.GetBufferArray(), sendMode);
-				Host.Broadcast((byte)sendMode, packet);
-			}
+			Packet packet = default;
+			packet.Create(message.GetBufferArray());
+			Host.Broadcast(channel, ref packet);
 		}
 
 		/// <summary>
@@ -99,14 +96,12 @@ namespace FlareNet.Server
 		/// <param name="message">The message to send</param>
 		/// <param name="clients">The clients to send to</param>
 		/// <param name="sendMode"></param>
-		public void BroadcastMessage(Message message, Peer[] clients, SendMode sendMode)
+		public void BroadcastMessage(Message message, Peer[] clients, byte channel)
 		{
 			// Create packet and send to selected clients
-			using (Packet packet = default)
-			{
-				packet.Create(message.GetBufferArray(), sendMode);
-				Host.Broadcast((byte)sendMode, packet, ref clients);
-			}
+			Packet packet = default;
+			packet.Create(message.GetBufferArray(), PacketFlags.Reliable);
+			Host.Broadcast(channel, ref packet, clients);
 		}
 
 		public override void Disconnect()
@@ -125,6 +120,7 @@ namespace FlareNet.Server
 			}
 
 			ClientManager = null;
+			Library.Deinitialize();
 		}
 	}
 }

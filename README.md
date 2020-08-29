@@ -7,9 +7,12 @@ FlareNet is intended to be a set of high-level tools built on ENet C#, providing
 ### TODO
 
 - [x] Server-client structure
+- [ ] Unit tests
 - [ ] Dedicated FlareSystem classes
 - [ ] Callback registration attribute
 - [ ] Encryption
+- [ ] Proper channel management
+- [ ] Proper handling of packet flags
 - [ ] Simplified serializable objects
 - [ ] Client metadata syncing
 - [ ] Network-synced entities

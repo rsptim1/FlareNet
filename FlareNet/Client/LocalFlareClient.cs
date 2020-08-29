@@ -15,6 +15,8 @@ namespace FlareNet.Client
 
 		internal LocalFlareClient(string ip, ushort port)
 		{
+			Library.Initialize();
+
 			// Setup the address
 			Address = new Address() { Port = port };
 			Address.SetHost(ip);
@@ -22,7 +24,6 @@ namespace FlareNet.Client
 			// Setup the host
 			Host = new Host();
 			Host.Create(1, 2);
-			Host.EnableCompression();
 
 			// Setup the peer
 			Peer = Host.Connect(Address, 2);
@@ -55,22 +56,22 @@ namespace FlareNet.Client
 			}
 		}
 
-		protected virtual void OnConnect(NetworkEvent e)
+		protected virtual void OnConnect(Event e)
 		{
 			NetworkLogger.Log(NetworkLogEvent.ClientConnect);
 		}
 
-		protected virtual void OnDisconnect(NetworkEvent e)
+		protected virtual void OnDisconnect(Event e)
 		{
 			NetworkLogger.Log(NetworkLogEvent.ClientDisconnect);
 		}
 
-		protected virtual void OnTimeout(NetworkEvent e)
+		protected virtual void OnTimeout(Event e)
 		{
 			NetworkLogger.Log(NetworkLogEvent.ClientTimeout);
 		}
 
-		protected virtual void OnMessageReceived(NetworkEvent e)
+		protected virtual void OnMessageReceived(Event e)
 		{
 			NetworkLogger.Log($"Packet from server on Channel [{e.ChannelID}] with Length [{e.Packet.Length}]");
 
@@ -91,6 +92,8 @@ namespace FlareNet.Client
 				Host.Flush();
 				Host.Dispose();
 			}
+
+			Library.Deinitialize();
 		}
 	}
 }

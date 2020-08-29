@@ -27,8 +27,13 @@ namespace FlareNet
 		/// Start a server with a port.
 		/// </summary>
 		/// <param name="port">The port to open</param>
-		public static void Create(ushort port, ServerConfig config = default)
+		public static void Create(ushort port, ServerConfig config = null)
 		{
+			if (config == null)
+			{
+				config = new ServerConfig();
+			}
+
 			FlareServer server = new FlareServer(config, port);
 			FlareClientManager = server.ClientManager;
 			flareClient = server;

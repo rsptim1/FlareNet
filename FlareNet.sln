@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlareNet", "FlareNet\FlareN
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetStack", "NetStack\NetStack.csproj", "{1BB967B7-EC4F-45B0-80AF-4C40BAB32D0C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlareNetTests", "FlareNetTests\FlareNetTests.csproj", "{EB555161-C868-4ACC-A6E3-A5849CFB122A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{1BB967B7-EC4F-45B0-80AF-4C40BAB32D0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1BB967B7-EC4F-45B0-80AF-4C40BAB32D0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1BB967B7-EC4F-45B0-80AF-4C40BAB32D0C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB555161-C868-4ACC-A6E3-A5849CFB122A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB555161-C868-4ACC-A6E3-A5849CFB122A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB555161-C868-4ACC-A6E3-A5849CFB122A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB555161-C868-4ACC-A6E3-A5849CFB122A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

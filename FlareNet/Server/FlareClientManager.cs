@@ -7,9 +7,9 @@ namespace FlareNet.Server
 	/// <summary>
 	/// Handles adding, removing and management of clients that are connected to the server.
 	/// </summary>
-	public class FlareClientManager
+	internal class FlareClientManager
 	{
-		private readonly Dictionary<uint, IClient> connectedClients;
+		private readonly Dictionary<uint, FlareClientShell> connectedClients;
 
 		public delegate void OnClientConnected(IClient client);
 		public delegate void OnClientDisconnected(IClient client);
@@ -27,14 +27,14 @@ namespace FlareNet.Server
 		public FlareClientManager(int maxConnections)
 		{
 			// Initialize the dictionary for clients
-			connectedClients = new Dictionary<uint, IClient>(maxConnections);
+			connectedClients = new Dictionary<uint, FlareClientShell>(maxConnections);
 		}
 
 		/// <summary>
 		/// Add a client to the client manager.
 		/// </summary>
 		/// <param name="client"></param>
-		public void AddClient(FlareClient client)
+		internal void AddClient(FlareClientShell client)
 		{
 			uint id = client.Peer.ID;
 
@@ -55,7 +55,7 @@ namespace FlareNet.Server
 		/// Remove a client from the client manager by ID.
 		/// </summary>
 		/// <param name="id">The ID of the client to remove</param>
-		public void RemoveClient(uint id)
+		internal void RemoveClient(uint id)
 		{
 			if (TryGetClient(id, out var client))
 			{
@@ -72,9 +72,9 @@ namespace FlareNet.Server
 		/// Get all connected clients as an array.
 		/// </summary>
 		/// <returns>Connected clients as an array</returns>
-		public IClient[] GetAllClients()
+		internal FlareClientShell[] GetAllClients()
 		{
-			var clients = new IClient[connectedClients.Count];
+			var clients = new FlareClientShell[connectedClients.Count];
 
 			connectedClients.Values.CopyTo(clients, 0);
 
@@ -86,7 +86,7 @@ namespace FlareNet.Server
 		/// </summary>
 		/// <param name="clientId">The ID of the client</param>
 		/// <returns></returns>
-		public bool TryGetClient(uint clientId, out IClient client)
+		internal bool TryGetClient(uint clientId, out FlareClientShell client)
 		{
 			return connectedClients.TryGetValue(clientId, out client);
 		}

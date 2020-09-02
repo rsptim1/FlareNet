@@ -1,76 +1,65 @@
 ﻿using FlareNet.Client;
-using FlareNet.Debug;
 using FlareNet.Server;
 using System;
 
 namespace FlareNet
 {
+	/// <summary>
+	/// A main interface and helper class for FlareNet, this class provides
+	/// functions for creating a server and connecting to an existing one,
+	/// as well as also exposing the main Update function.
+	/// This update function must be called for FlareNet to function.
+	/// </summary>
 	public static class FlareNetwork
 	{
-		internal static FlareClient flareClient;
-
-		public static FlareClientManager FlareClientManager { get; private set; }
+		internal static event Action ClientUpdate;
+		internal static bool LibraryInitialized = false;
 
 		/// <summary>
 		/// Create a FlareClient and connect to a server.
 		/// </summary>
 		/// <param name="ip">The server IP address</param>
 		/// <param name="port">The port to connect with</param>
-		/// <param name="onCompleted">A callback handling if the client was able to connect or not</param>
-		public static void Connect(string ip, ushort port, Action<bool> onCompleted = null)
+		public static FlareClient Connect(string ip, ushort port)
 		{
-			flareClient = new LocalFlareClient(ip, port);
-			onCompleted?.Invoke(flareClient.IsConnected);
+			return new FlareClient(ip, port);
 		}
 
 		/// <summary>
-		/// Start a server with a port.
+		/// Start a FlareServer with a port.
 		/// </summary>
 		/// <param name="port">The port to open</param>
-		public static void Create(ushort port, ServerConfig config = null)
+		public static FlareServer Create(ushort port, ServerConfig config = null)
 		{
-			if (config == null)
-			{
-				config = new ServerConfig();
-			}
-
-			FlareServer server = new FlareServer(config, port);
-			FlareClientManager = server.ClientManager;
-			flareClient = server;
+			return new FlareServer(config ?? new ServerConfig(), port);
 		}
 
 		/// <summary>
-		/// Shutdown or disconnect the current FlareClient.
-		/// </summary>
-		public static void Shutdown()
-		{
-			flareClient?.Disconnect();
-			FlareClientManager = null;
-			flareClient = null;
-		}
-
-		/// <summary>
-		/// Update the current FlareClient.
+		/// Update all active FlareClients.
 		/// </summary>
 		public static void Update()
 		{
-			if (flareClient == null)
+			ClientUpdate?.Invoke();
+		}
+
+		internal static void InitializeLibrary()
+		{
+			// If the library has not been initialized yet
+			if (!LibraryInitialized)
 			{
-				NetworkLogger.Log("Unable to update FlareNet - no client is running!", LogLevel.Error);
-				return;
+				ENet.Library.Initialize();
+				LibraryInitialized = true;
 			}
-
-			flareClient.Update();
 		}
 
-		public static void RegisterCallback(ushort tag, FlareMessageCallback callback)
+		internal static void DeinitializeLibrary()
 		{
-			MessageHandler.RegisterCallback(tag, callback);
-		}
-
-		public static void RemoveCallback(ushort tag)
-		{
-			MessageHandler.RemoveCalback(tag);
+			// If it's initialized and there's no clients registered to update
+			if (LibraryInitialized && ClientUpdate == null)
+			{
+				ENet.Library.Deinitialize();
+				LibraryInitialized = false;
+			}
 		}
 	}
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FlareNet.Server
 {
-	public class Upnp
+	internal class Upnp
 	{
 		public static async void OpenPort(string portMapName, ushort port, Action<string> onCompleted)
 		{

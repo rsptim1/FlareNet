@@ -1,6 +1,6 @@
 ﻿namespace FlareNet.Debug
 {
-	internal static class NetworkLogger
+	public static class NetworkLogger
 	{
 		/// <summary>
 		/// Enable output from the logger.
@@ -11,7 +11,7 @@
 		/// The output interface used by the logger. This is set to a default value
 		/// and only needs to be changed if a different output method is desired.
 		/// </summary>
-		public static ILoggerOutput Output { get; set; }
+		public static ILoggerOutput Output { get; set; } = new ConsoleLoggerOutput();
 
 		private const string ServerStart = "FlareNet server started";
 		private const string ServerStop = "FlareNet server stopped";
@@ -82,7 +82,7 @@
 		}
 	}
 
-	public enum NetworkLogEvent
+	internal enum NetworkLogEvent
 	{
 		ServerStart,
 		ServerStop,

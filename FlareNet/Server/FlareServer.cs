@@ -4,16 +4,16 @@ using FlareNet.Debug;
 
 namespace FlareNet.Server
 {
-	internal class FlareServer : LocalFlareClient
+	public class FlareServer : FlareClient
 	{
-		public FlareClientManager ClientManager { get; private set; }
+		internal FlareClientManager ClientManager { get; private set; }
 
 		public ServerConfig Config { get; set; }
 
 		public FlareServer(ServerConfig config, ushort port)
 		{
 			Config = config;
-			Library.Initialize();
+			FlareNetwork.InitializeLibrary();
 			StartServer(port);
 		}
 
@@ -31,12 +31,14 @@ namespace FlareNet.Server
 			NetworkLogger.Log(Debug.NetworkLogEvent.ServerStart);
 		}
 
+		#region Updates
+
 		protected override void OnConnect(Event e)
 		{
 			Peer peer = e.Peer;
 
 			NetworkLogger.Log($"Client [{peer.ID}] connected from [{peer.IP}]");
-			ClientManager.AddClient(new FlareClient(peer));
+			ClientManager.AddClient(new FlareClientShell(peer));
 		}
 
 		protected override void OnDisconnect(Event e)
@@ -64,7 +66,7 @@ namespace FlareNet.Server
 			NetworkLogger.Log($"Packet from [{networkEvent.Peer.IP}] ({networkEvent.Peer.ID}) " +
 				$"on Channel [{networkEvent.ChannelID}] Length [{networkEvent.Packet.Length}]");
 
-			if (!ClientManager.TryGetClient(networkEvent.Peer.ID, out IClient client))
+			if (!ClientManager.TryGetClient(networkEvent.Peer.ID, out FlareClientShell client))
 			{
 				NetworkLogger.Log($"Message received from a null client with ID [{networkEvent.Peer.ID}]", LogLevel.Warning);
 			}
@@ -77,11 +79,15 @@ namespace FlareNet.Server
 			MessageHandler.ProcessMessage(message, client);
 		}
 
+		#endregion
+
+		#region Messages
+
 		/// <summary>
 		/// Send a message to all connected clients.
 		/// </summary>
-		/// <param name="message"></param>
-		/// <param name="sendMode"></param>
+		/// <param name="message">The message to send</param>
+		/// <param name="channel">The channel to send the message through</param>
 		public override void SendMessage(Message message, byte channel)
 		{
 			// Create packet and broadcast
@@ -91,36 +97,71 @@ namespace FlareNet.Server
 		}
 
 		/// <summary>
-		/// Send a message to an array of peers.
+		/// Send a message to an array of clients.
 		/// </summary>
 		/// <param name="message">The message to send</param>
 		/// <param name="clients">The clients to send to</param>
-		/// <param name="sendMode"></param>
-		public void BroadcastMessage(Message message, Peer[] clients, byte channel)
+		/// <param name="channel">The channel to send the message through</param>
+		public void SendMessage(Message message, IClient[] clients, byte channel)
 		{
+			// Extract the array of peers from the clients
+			// TODO: Figure out a more efficient way for this.
+			int l = clients.Length;
+			Peer[] peers = new Peer[l];
+			for (int i = 0; i < l; ++i)
+			{
+				peers[i] = clients[i].Peer;
+			}
+
 			// Create packet and send to selected clients
 			Packet packet = default;
 			packet.Create(message.GetBufferArray(), PacketFlags.Reliable);
-			Host.Broadcast(channel, ref packet, clients);
+			Host.Broadcast(channel, ref packet, peers);
 		}
 
+		#endregion
+
+		/// <summary>
+		/// Try to get a client connected to this server.
+		/// </summary>
+		/// <param name="clientId">The ID of the client</param>
+		/// <param name="client">The requested client</param>
+		/// <returns>True if a client is found</returns>
+		public bool TryGetClient(uint clientId, out IClient client)
+		{
+			// Try to grab the client shell from the client manager
+			bool result = ClientManager.TryGetClient(clientId, out var shell);
+			client = shell;
+
+			return result;
+		}
+
+		/// <summary>
+		/// Get all clients connected to this server.
+		/// </summary>
+		/// <returns>An array of all connected IClients</returns>
+		public IClient[] GetAllClients()
+		{
+			return ClientManager.GetAllClients();
+		}
+
+		/// <summary>
+		/// Disconnects all clients and shuts the server down.
+		/// </summary>
 		public override void Disconnect()
 		{
 			NetworkLogger.Log(NetworkLogEvent.ServerStop);
 
-			foreach (var client in ClientManager.GetAllClients())
+			// Kick all remaining clients off
+			var clients = ClientManager.GetAllClients();
+			for (int i = 0; i < clients.Length; ++i)
 			{
-				client.Disconnect();
+				clients[i].Disconnect();
 			}
-
-			if (Host != null)
-			{
-				Host.Flush();
-				Host.Dispose();
-			}
-
 			ClientManager = null;
-			Library.Deinitialize();
+
+			// Shut the rest of the client down
+			Shutdown();
 		}
 	}
 }

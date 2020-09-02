@@ -5,32 +5,39 @@ namespace FlareNet
 {
 	public delegate void FlareMessageCallback(Message message, IClient client);
 
-	internal static class MessageHandler
+	internal class MessageHandler
 	{
-		private static readonly Dictionary<ushort, FlareMessageCallback> callbacks = new Dictionary<ushort, FlareMessageCallback>();
+		private readonly Dictionary<ushort, FlareMessageCallback> callbacks = new Dictionary<ushort, FlareMessageCallback>();
 
 		/// <summary>
-		/// Adds a callback associated with a tag to the dictionary
+		/// Adds a callback associated with a tag to the dictionary.
 		/// </summary>
-		/// <param name="tag"></param>
-		/// <param name="callback"></param>
-		public static void RegisterCallback(ushort tag, FlareMessageCallback callback)
+		/// <param name="tag">The tag the callback will be invoked on</param>
+		/// <param name="callback">The function or delegate to be invoked</param>
+		public void RegisterCallback(ushort tag, FlareMessageCallback callback)
 		{
-			if (!callbacks.ContainsKey(tag))
+			if (callbacks.TryGetValue(tag, out var registeredCallback))
 			{
-				callbacks.Add(tag, callback);
+				// Add the new function to the existing callback
+				registeredCallback -= callback;
+				registeredCallback += callback;
+
+				// Remove the existing from the dictionary, then add the new
+				callbacks.Remove(tag);
+				callbacks.Add(tag, registeredCallback);
 			}
 			else
 			{
-				NetworkLogger.Log("Cannot register callback - an entry with the same tag already exists!", LogLevel.Error);
+				// Create and add the callback
+				callbacks.Add(tag, callback);
 			}
 		}
 
 		/// <summary>
-		/// Remove the callback associated with a tag.
+		/// Remove all callbacks associated with a tag.
 		/// </summary>
 		/// <param name="tag">The tag to check</param>
-		public static void RemoveCalback(ushort tag)
+		public void RemoveCallback(ushort tag)
 		{
 			if (callbacks.ContainsKey(tag))
 			{
@@ -43,11 +50,30 @@ namespace FlareNet
 		}
 
 		/// <summary>
+		/// Removes a callback from a tag entry.
+		/// </summary>
+		/// <param name="tag">The tag to remove the callback from</param>
+		/// <param name="callback">The function or delegate to remove</param>
+		public void RemoveCallback(ushort tag, FlareMessageCallback callback)
+		{
+			if (callbacks.TryGetValue(tag, out var registeredCallback))
+			{
+				registeredCallback -= callback;
+				callbacks.Remove(tag);
+				callbacks.Add(tag, registeredCallback);
+			}
+			else
+			{
+				NetworkLogger.Log("Cannot remove callback - no entry with the tag exists!", LogLevel.Error);
+			}
+		}
+
+		/// <summary>
 		/// Process an incoming message and invoke the registered callback.
 		/// </summary>
 		/// <param name="message">The message to process</param>
 		/// <param name="client">The originating client</param>
-		public static void ProcessMessage(Message message, IClient client)
+		public void ProcessMessage(Message message, IClient client)
 		{
 			if (callbacks.TryGetValue(message.Tag, out var callback))
 			{

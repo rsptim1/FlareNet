@@ -51,8 +51,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Client\FlareClientBase.cs" />
     <Compile Include="Client\FlareClient.cs" />
-    <Compile Include="Client\LocalFlareClient.cs" />
+    <Compile Include="Client\FlareClientShell.cs" />
     <Compile Include="Logging\ConsoleLoggerOutput.cs" />
     <Compile Include="Logging\ILoggerOutput.cs" />
     <Compile Include="Server\FlareClientManager.cs" />

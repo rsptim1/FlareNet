@@ -123,7 +123,7 @@ namespace FlareNet.Client
 
 		#endregion
 
-		public virtual void SendMessage(Message message, byte channel)
+		public virtual void SendMessage(Message message, byte channel = 0)
 		{
 			// Create and send packet
 			Packet packet = default;

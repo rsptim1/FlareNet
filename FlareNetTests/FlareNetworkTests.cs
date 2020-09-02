@@ -63,8 +63,8 @@ namespace FlareNetTests
 
 			Message m = new Message(1);
 			m.Process(ref test);
-			client.SendMessage(m, 0);
-			NetworkLogger.Log("sente");
+			client.SendMessage(m);
+			NetworkLogger.Log("sent");
 		}
 
 		private void TestCallback(Message message, IClient client)

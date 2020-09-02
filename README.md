@@ -28,6 +28,24 @@ I would like to say "just open the solution and build," but I don't think it's q
 
 # Getting Started
 
+## Starting a server or client
+
+`FlareNetwork` provides helper functions for creating a server or creating a client to connect to an existing server.
+
+```cs
+using FlareNet;
+
+// Create a server on the port 2000
+FlareServer server = FlareNetwork.Create(2000);
+
+// Create and connect a client to an IP and port
+FlareClient client = FlareNetwork.Connect("127.0.0.1", 2000);
+```
+
+## Updating a client
+
+`FlareNetwork.Update()` must be continuously called from a thread to update any existing server or client.
+
 ## Processing a serializable object
 
 To send data between server and client, a struct or class implementing the `ISerializable` interface must be set up to process the variables to be sent or synced.
@@ -58,11 +76,9 @@ class ExampleClass : ISerializable
 
 ## Registering a message callback
 
-Each unique network tag, represented as a `ushort`, can have a single callback method to be invoked when a message with the respective tag is received from the server.
+Each unique network tag, represented as a `ushort`, can have callback methods to be invoked when a message with the respective tag is received from the server or a client.
 
 ```csharp
-using FlareNet;
-
 ExampleClass exampleVar;
 
 void ExampleCallback(Message message, IClient client)
@@ -74,15 +90,18 @@ void ExampleCallback(Message message, IClient client)
 // ...
 
 // To add the tag and callback to be invoked
-FlareNetwork.RegisterCallback((ushort)tag, (ServerMessageCallback) exampleCallback);
+client.RegisterCallback((ushort)tag, (FlareMessageCallback)ExampleCallback);
 
 // To remove the callback so it is no longer invoked
-FlareNetwork.RemoveCallback((ushort)tag);
+client.RemoveCallback((ushort)tag, (FlareMessageCallback)ExampleCallback);
+
+// To remove all callbacks for a tag
+client.RemoveCallback((ushort)tag);
 ```
 
 ## Sending a message
 
-The tag attached to the message must be a unique `ushort` as to distinguish the data being sent and to invoke the correct registered callback.
+The tag attached to the message must be a unique `ushort` as to distinguish the data being sent and to invoke the correct registered callbacks.
 
 Create a message as such, process the data to be sent, and send through the active server or client.
 
@@ -93,12 +112,8 @@ const ushort Tag = 18;
 var exampleVar = new ExampleClass(new OtherSerializable());
 
 // Create and send the message through the client or server
-using (Message message = new Message(Tag))
-{
-    // Process the data to be sent
-    message.Process(ref exampleVar);
-
-    FlareNetwork.SendMessageReliable(message);
-}
+Message m = new Message(Tag);
+m.Process(ref exampleVar);
+server.SendMessage(m)
 ```
 

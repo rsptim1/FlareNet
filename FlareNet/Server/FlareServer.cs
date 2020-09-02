@@ -89,7 +89,7 @@ namespace FlareNet.Server
 		/// </summary>
 		/// <param name="message">The message to send</param>
 		/// <param name="channel">The channel to send the message through</param>
-		public override void SendMessage(Message message, byte channel)
+		public override void SendMessage(Message message, byte channel = 0)
 		{
 			// Create packet and broadcast
 			Packet packet = default;
@@ -103,7 +103,7 @@ namespace FlareNet.Server
 		/// <param name="message">The message to send</param>
 		/// <param name="clients">The clients to send to</param>
 		/// <param name="channel">The channel to send the message through</param>
-		public void SendMessage(Message message, IClient[] clients, byte channel)
+		public void SendMessage(Message message, IClient[] clients, byte channel = 0)
 		{
 			// Extract the array of peers from the clients
 			// TODO: Figure out a more efficient way for this.

@@ -19,15 +19,17 @@ namespace FlareNetTests
 		private const string ExampleString = "FlareNet";
 		private const bool ExampleBool = true;
 
+		private const ushort port = 34377;
+
 		private int countdown;
 
 		[TestMethod]
 		public void LocalHostTest()
 		{
-			server = FlareNetwork.Create(34377);
+			server = FlareNetwork.Create(port);
 			Assert.IsNotNull(server);
 
-			client = FlareNetwork.Connect("127.0.0.1", 34377);
+			client = FlareNetwork.Connect("127.0.0.1", port);
 			Assert.IsNotNull(client);
 
 			server.RegisterCallback(1, TestCallback);
@@ -61,8 +63,8 @@ namespace FlareNetTests
 
 			Message m = new Message(1);
 			m.Process(ref test);
-			client.SendMessage(m, 1);
-			NetworkLogger.Log("sent");
+			client.SendMessage(m, 0);
+			NetworkLogger.Log("sente");
 		}
 
 		private void TestCallback(Message message, IClient client)

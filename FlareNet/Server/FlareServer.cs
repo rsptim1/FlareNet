@@ -28,6 +28,7 @@ namespace FlareNet.Server
 			Host.Create(Address, Config.MaxConnections, 2);
 
 			ClientManager = new FlareClientManager(Config.MaxConnections);
+			FlareNetwork.ClientUpdate += Update;
 			NetworkLogger.Log(Debug.NetworkLogEvent.ServerStart);
 		}
 

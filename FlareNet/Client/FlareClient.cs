@@ -17,10 +17,6 @@ namespace FlareNet.Client
 		public FlareClient(string ip, ushort port)
 		{
 			FlareNetwork.InitializeLibrary();
-
-			// Subscribe for network updates
-			FlareNetwork.ClientUpdate += Update;
-
 			// Setup the address
 			Address = new Address() { Port = port };
 			Address.SetHost(ip);
@@ -28,6 +24,9 @@ namespace FlareNet.Client
 			// Setup the host
 			Host = new Host();
 			Host.Create(1, 2);
+
+			// Subscribe for network updates
+			FlareNetwork.ClientUpdate += Update;
 
 			// Setup the peer
 			Peer = Host.Connect(Address, 2);
@@ -40,7 +39,7 @@ namespace FlareNet.Client
 		internal void Update()
 		{
 			// Handle the next network event
-			if (Host.Service(0, out var networkEvent) > 0)
+			while (Host.CheckEvents(out Event networkEvent) > 0 || Host.Service(2, out networkEvent) > 0)
 			{
 				switch (networkEvent.Type)
 				{

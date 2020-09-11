@@ -29,9 +29,9 @@ namespace FlareNet
 		/// Start a FlareServer with a port.
 		/// </summary>
 		/// <param name="port">The port to open</param>
-		public static FlareServer Create(ushort port, ServerConfig config = null)
+		public static FlareServer Create(ushort port, Action<string> onServerStarted, ServerConfig config = null)
 		{
-			return new FlareServer(config ?? new ServerConfig(), port);
+			return new FlareServer(config ?? new ServerConfig(), port, onServerStarted);
 		}
 
 		/// <summary>
@@ -47,7 +47,11 @@ namespace FlareNet
 			// If the library has not been initialized yet
 			if (!LibraryInitialized)
 			{
-				ENet.Library.Initialize();
+				if (!ENet.Library.Initialize())
+				{
+					throw new System.Exception();
+				}
+				
 				LibraryInitialized = true;
 			}
 		}

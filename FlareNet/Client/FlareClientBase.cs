@@ -21,6 +21,7 @@ namespace FlareNet.Client
 		public ushort Port => Peer.Port;
 
 		public bool IsConnected => Peer.State == PeerState.Connected || Peer.State == PeerState.ConnectionSucceeded;
+		public bool IsUnableToConnect => Peer.State == PeerState.Disconnected;
 
 		public abstract void Disconnect();
 	}

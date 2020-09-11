@@ -23,13 +23,13 @@ namespace FlareNet.Client
 
 			// Setup the host
 			Host = new Host();
-			Host.Create(1, 2);
+			Host.Create(1, 1);
 
 			// Subscribe for network updates
 			FlareNetwork.ClientUpdate += Update;
 
 			// Setup the peer
-			Peer = Host.Connect(Address, 2);
+			Peer = Host.Connect(Address, 1);
 		}
 
 		protected FlareClient() { }
@@ -39,7 +39,7 @@ namespace FlareNet.Client
 		internal void Update()
 		{
 			// Handle the next network event
-			while (Host.CheckEvents(out Event networkEvent) > 0 || Host.Service(2, out networkEvent) > 0)
+			while (PollClient(out Event networkEvent))
 			{
 				switch (networkEvent.Type)
 				{
@@ -58,6 +58,18 @@ namespace FlareNet.Client
 					case EventType.None:
 						break;
 				}
+			}
+
+			bool PollClient(out Event e)
+			{
+				int result = Host.CheckEvents(out e);
+				
+				if (e.Type == EventType.None)
+				{
+					result = Host.Service(0, out e);
+				}
+
+				return e.Type != EventType.None || result > 0;
 			}
 		}
 

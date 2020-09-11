@@ -1,88 +1,19 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{46ED394F-5CAF-43A6-BBFF-3959869045AA}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FlareNet</RootNamespace>
-    <AssemblyName>FlareNet</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;UNITY;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile></DocumentationFile>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="ENet-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ENet-CSharp.2.4.2\lib\net35\ENet-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Open.Nat, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f22a6a4582336c76">
-      <HintPath>..\packages\Open.NAT.2.1.0.0\lib\net45\Open.Nat.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Threading" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
+    <PackageReference Include="ENet-CSharp" Version="2.4.3" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="Client\FlareClientBase.cs" />
-    <Compile Include="Client\FlareClient.cs" />
-    <Compile Include="Client\FlareClientShell.cs" />
-    <Compile Include="Logging\ConsoleLoggerOutput.cs" />
-    <Compile Include="Logging\ILoggerOutput.cs" />
-    <Compile Include="Server\FlareClientManager.cs" />
-    <Compile Include="Client\IClient.cs" />
-    <Compile Include="Logging\NetworkLogger.cs" />
-    <Compile Include="FlareNetwork.cs" />
-    <Compile Include="Serialization\MessageHandler.cs" />
-    <Compile Include="Serialization\ISerializable.cs" />
-    <Compile Include="Serialization\Message.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Server\FlareServer.cs" />
-    <Compile Include="Server\ServerConfig.cs" />
-    <Compile Include="Server\Upnp.cs" />
+    <ProjectReference Include="..\NetStack\NetStack.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\NetStack\NetStack.csproj">
-      <Project>{1bb967b7-ec4f-45b0-80af-4c40bab32d0c}</Project>
-      <Name>NetStack</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\ENet-CSharp.2.4.2\build\ENet-CSharp.targets" Condition="Exists('..\packages\ENet-CSharp.2.4.2\build\ENet-CSharp.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\ENet-CSharp.2.4.2\build\ENet-CSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ENet-CSharp.2.4.2\build\ENet-CSharp.targets'))" />
-  </Target>
+
 </Project>

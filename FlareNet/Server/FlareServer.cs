@@ -1,7 +1,6 @@
 ﻿using ENet;
 using FlareNet.Client;
 using FlareNet.Debug;
-using System;
 
 namespace FlareNet.Server
 {
@@ -10,16 +9,15 @@ namespace FlareNet.Server
 		internal FlareClientManager ClientManager { get; private set; }
 
 		public ServerConfig Config { get; set; }
-		
-		public FlareServer(ServerConfig config, ushort port, Action<string> onServerStarted)
+
+		public FlareServer(ServerConfig config, ushort port)
 		{
 			Config = config;
 			FlareNetwork.InitializeLibrary();
-			//System.Threading.Tasks.Task task = Upnp.OpenPort($"FlareServer{port}", port, ip => StartServer(port, ip, onServerStarted));
 			StartServer(port);
 		}
 
-		private void StartServer(ushort port/*, string ip, Action<string> onServerStarted*/)
+		private void StartServer(ushort port)
 		{
 			Host = new Host();
 
@@ -32,8 +30,6 @@ namespace FlareNet.Server
 			ClientManager = new FlareClientManager(Config.MaxConnections);
 			FlareNetwork.ClientUpdate += Update;
 			NetworkLogger.Log(Debug.NetworkLogEvent.ServerStart);
-
-			//onServerStarted?.Invoke(ip);
 		}
 
 		#region Updates

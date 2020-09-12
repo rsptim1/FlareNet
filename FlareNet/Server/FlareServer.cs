@@ -25,7 +25,7 @@ namespace FlareNet.Server
 			Address = new Address { Port = port };
 
 			//Initialize the host.
-			Host.Create(Address, Config.MaxConnections, 1);
+			Host.Create(Address, Config.MaxConnections);
 
 			ClientManager = new FlareClientManager(Config.MaxConnections);
 			FlareNetwork.ClientUpdate += Update;

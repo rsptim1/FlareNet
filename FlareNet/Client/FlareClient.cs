@@ -23,13 +23,13 @@ namespace FlareNet.Client
 
 			// Setup the host
 			Host = new Host();
-			Host.Create(1, 1);
+			Host.Create();
 
 			// Subscribe for network updates
 			FlareNetwork.ClientUpdate += Update;
 
 			// Setup the peer
-			Peer = Host.Connect(Address, 1);
+			Peer = Host.Connect(Address);
 		}
 
 		protected FlareClient() { }

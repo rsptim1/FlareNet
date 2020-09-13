@@ -1,11 +1,12 @@
+using FlareNet;
 using FlareNet.Client;
 using FlareNet.Server;
 using NUnit.Framework;
-using Network = FlareNet.FlareNetwork;
+using static FlareNetTests.TestConstants;
 
 namespace FlareNetTests
 {
-	public class FlareNetwork
+	public class FlareNetworkTests
 	{
 		FlareServer server;
 		FlareClient client;
@@ -13,18 +14,20 @@ namespace FlareNetTests
 		[SetUp]
 		public void Setup()
 		{
-			server = Network.Create(34377);
+			server = FlareNetwork.Create(TestPort);
 		}
 
 		[Test]
-		public void LocalHostConnectionTest()
+		public void ConnectLocal()
 		{
 			Assert.IsNotNull(server, "Server is null");
-			client = Network.Connect("127.0.0.1", 34377);
+			FlareNetwork.Update();
+
+			client = FlareNetwork.Connect(Loopback, TestPort);
 
 			while (client.ClientState == ENet.PeerState.Connecting)
 			{
-				Network.Update();
+				FlareNetwork.Update();
 			}
 
 			Assert.IsFalse(client.IsUnableToConnect);
@@ -34,7 +37,7 @@ namespace FlareNetTests
 		}
 
 		[Test]
-		public void DisconnectTest()
+		public void Disconnect()
 		{
 			Assert.IsNotNull(server);
 

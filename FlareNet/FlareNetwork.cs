@@ -31,7 +31,7 @@ namespace FlareNet
 		/// <param name="port">The port to open</param>
 		public static FlareServer Create(ushort port, ServerConfig config = null)
 		{
-			return new FlareServer(config ?? new ServerConfig(), port);
+			return new FlareServer(port, config ?? new ServerConfig());
 		}
 
 		/// <summary>

@@ -10,7 +10,7 @@ namespace FlareNet.Server
 
 		public ServerConfig Config { get; set; }
 
-		public FlareServer(ServerConfig config, ushort port)
+		public FlareServer(ushort port, ServerConfig config)
 		{
 			Config = config;
 			FlareNetwork.InitializeLibrary();

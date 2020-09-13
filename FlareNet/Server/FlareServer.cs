@@ -10,6 +10,11 @@ namespace FlareNet.Server
 
 		public ServerConfig Config { get; set; }
 
+		public new string IpAddress => Address.GetIP();
+		public new uint Port => Address.Port;
+		public new ulong TotalDataIn => Host.BytesReceived;
+		public new ulong TotalDataOut => Host.BytesSent;
+
 		public FlareServer(ushort port, ServerConfig config)
 		{
 			Config = config;
@@ -21,11 +26,12 @@ namespace FlareNet.Server
 		{
 			Host = new Host();
 
-			//Create the address for the host to use.
+			// Create the address for the host to use
 			Address = new Address { Port = port };
 
-			//Initialize the host.
+			// Initialize the host
 			Host.Create(Address, Config.MaxConnections);
+			Host.SetMaxDuplicatePeers(2);
 
 			ClientManager = new FlareClientManager(Config.MaxConnections);
 			FlareNetwork.ClientUpdate += Update;
@@ -61,23 +67,18 @@ namespace FlareNet.Server
 		/// <summary>
 		/// Called when the server receives a message from a client.
 		/// </summary>
-		/// <param name="networkEvent"></param>
-		protected override void OnMessageReceived(Event networkEvent)
+		/// <param name="e"></param>
+		protected override void OnMessageReceived(Event e)
 		{
-			NetworkLogger.Log($"Packet from [{networkEvent.Peer.IP}] ({networkEvent.Peer.ID}) " +
-				$"on Channel [{networkEvent.ChannelID}] Length [{networkEvent.Packet.Length}]");
+			NetworkLogger.Log($"Packet from [{e.Peer.IP}] ({e.Peer.ID}) " +
+				$"on Channel [{e.ChannelID}] Length [{e.Packet.Length}]");
 
-			if (!ClientManager.TryGetClient(networkEvent.Peer.ID, out FlareClientShell client))
+			if (!ClientManager.TryGetClient(e.Peer.ID, out FlareClientShell client))
 			{
-				NetworkLogger.Log($"Message received from a null client with ID [{networkEvent.Peer.ID}]", LogLevel.Warning);
+				NetworkLogger.Log($"Message received from an unregistered client with ID [{e.Peer.ID}]", LogLevel.Warning);
 			}
 
-			// Deserialize message data
-			networkEvent.Packet.CopyTo(receivePacketBuffer);
-			Message message = new Message(receivePacketBuffer, networkEvent.Packet.Length + 4);
-
-			// Process the message and invoke any callback
-			MessageHandler.ProcessMessage(message, client);
+			ProcessMessage(e, client);
 		}
 
 		#endregion
@@ -122,6 +123,8 @@ namespace FlareNet.Server
 
 		#endregion
 
+		#region Client Manager
+
 		/// <summary>
 		/// Try to get a client connected to this server.
 		/// </summary>
@@ -146,6 +149,10 @@ namespace FlareNet.Server
 			return ClientManager.GetAllClients();
 		}
 
+		public int ClientCount => ClientManager.Count;
+
+		#endregion
+
 		/// <summary>
 		/// Disconnects all clients and shuts the server down.
 		/// </summary>
@@ -163,7 +170,6 @@ namespace FlareNet.Server
 
 			// Shut the rest of the client down
 			Shutdown();
-			//_ = Upnp.ClosePort($"FlareServer{Address.Port}", Address.Port);
 		}
 	}
 }

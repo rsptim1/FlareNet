@@ -11,6 +11,8 @@ namespace FlareNet.Server
 	{
 		private readonly Dictionary<uint, FlareClientShell> connectedClients;
 
+		public int Count => connectedClients.Count;
+
 		public delegate void OnClientConnected(IClient client);
 		public delegate void OnClientDisconnected(IClient client);
 

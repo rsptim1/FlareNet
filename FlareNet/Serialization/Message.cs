@@ -11,7 +11,7 @@ namespace FlareNet
 		public readonly ushort Tag;
 		internal readonly BitBuffer Buffer;
 
-		// We're writing to the buffer
+		// True when writing to the buffer
 		private readonly bool writing;
 
 		/// <summary>
@@ -21,11 +21,15 @@ namespace FlareNet
 		/// <param name="length">The length of the buffer to read</param>
 		internal Message(byte[] buffer, int length)
 		{
-			BitBuffer Buffer = new BitBuffer();
+			Buffer = new BitBuffer();
 			Buffer.FromArray(buffer, length);
 			Tag = Buffer.ReadUShort();
 
 			writing = false;
+		}
+
+		public Message(byte[] buffer) : this(buffer, buffer.Length)
+		{
 		}
 
 		/// <summary>

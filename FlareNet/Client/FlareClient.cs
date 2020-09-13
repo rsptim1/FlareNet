@@ -62,14 +62,15 @@ namespace FlareNet.Client
 
 			bool PollClient(out Event e)
 			{
-				int result = Host.CheckEvents(out e);
+				int result;
 				
-				if (e.Type == EventType.None)
-				{
+				if ((result = Host.CheckEvents(out e)) <= 0)
 					result = Host.Service(0, out e);
-				}
 
-				return e.Type != EventType.None || result > 0;
+				if (result < 0)
+					NetworkLogger.Log("FlareClient polling failure!", LogLevel.Error);
+
+				return result > 0;
 			}
 		}
 
@@ -91,7 +92,11 @@ namespace FlareNet.Client
 		protected virtual void OnMessageReceived(Event e)
 		{
 			NetworkLogger.Log($"Packet from server on Channel [{e.ChannelID}] with Length [{e.Packet.Length}]");
+			ProcessMessage(e, null);
+		}
 
+		protected void ProcessMessage(Event e, IClient client)
+		{
 			// Deserialize message data
 			e.Packet.CopyTo(receivePacketBuffer);
 			Message message = new Message(receivePacketBuffer, e.Packet.Length + 4);

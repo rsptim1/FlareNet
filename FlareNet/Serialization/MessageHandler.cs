@@ -83,6 +83,8 @@ namespace FlareNet
 			{
 				NetworkLogger.Log($"A callback with the tag [{message.Tag}] has not been registered!", LogLevel.Error);
 			}
+
+			message.Dispose();
 		}
 	}
 }

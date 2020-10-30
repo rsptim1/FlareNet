@@ -13,4 +13,9 @@
 	<PackageReference Include="ENet-CSharp" Version="2.4.5" />
   </ItemGroup>
 
+	<PropertyGroup>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+	</PropertyGroup>
+
+
 </Project>

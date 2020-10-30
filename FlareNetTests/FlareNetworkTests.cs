@@ -14,20 +14,20 @@ namespace FlareNetTests
 		[SetUp]
 		public void Setup()
 		{
-			server = FlareNetwork.Create(TestPort);
+			server = ENetLibrary.Create(TestPort);
 		}
 
 		[Test]
 		public void ConnectLocal()
 		{
 			Assert.IsNotNull(server, "Server is null");
-			FlareNetwork.Update();
+			ENetLibrary.Update();
 
-			client = FlareNetwork.Connect(Loopback, TestPort);
+			client = ENetLibrary.Connect(Loopback, TestPort);
 
 			while (client.ClientState == ENet.PeerState.Connecting)
 			{
-				FlareNetwork.Update();
+				ENetLibrary.Update();
 			}
 
 			Assert.IsFalse(client.IsUnableToConnect);

@@ -14,7 +14,7 @@ namespace FlareNetTests
 		[SetUp]
 		public void Setup()
 		{
-			server = FlareNetwork.Create(TestPort);
+			server = ENetLibrary.Create(TestPort);
 		}
 
 		[Test]
@@ -31,7 +31,7 @@ namespace FlareNetTests
 
 			while (isRunning)
 			{
-				FlareNetwork.Update();
+				ENetLibrary.Update();
 
 				if (server.ClientCount > 0)
 					break;

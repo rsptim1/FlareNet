@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlareNet", "FlareNet\FlareN
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetStack", "NetStack\NetStack.csproj", "{DCFA7EF1-3AD7-4114-8BBD-77017A09AC3D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlareNetTests", "FlareNetTests\FlareNetTests.csproj", "{C8ABFC4B-1C11-463C-BD45-312A5C023430}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlareNetTestingConsole", "FlareNetTestingConsole\FlareNetTestingConsole.csproj", "{4186FFDA-9975-4A03-B928-750180CACC87}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

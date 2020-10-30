@@ -2,7 +2,8 @@
 using FlareNet.Client;
 using FlareNet.Server;
 using NUnit.Framework;
-using System.Timers;
+using System.Threading;
+using Timer = System.Timers.Timer;
 using static FlareNetTests.TestConstants;
 
 namespace FlareNetTests
@@ -16,25 +17,26 @@ namespace FlareNetTests
 		public void Setup()
 		{
 			// Search for a UDP broadcast
-			LANBroadcast.BindToPort(TestPort);
-			while (ip == null)
-			{
-				LANBroadcast.Listen(ProcessMessage);
+			//LANBroadcast.BindToPort(TestPort);
+			//while (ip == null)
+			//{
+			//	LANBroadcast.Listen(ProcessMessage);
+			//	Thread.Sleep(10);
 
-				void ProcessMessage(Message m)
-				{
-					m.Process(ref ip);
-				}
-			}
+			//	void ProcessMessage(Message m)
+			//	{
+			//		m.Process(ref ip);
+			//	}
+			//}
 		}
-
+		
 		[Test]
 		public void InitiateConnection()
 		{
-			Assert.IsNotNull(ip);
-			Assert.IsNotEmpty(ip);
+			//Assert.IsNotNull(ip);
+			//Assert.IsNotEmpty(ip);
 
-			client = FlareNetwork.Connect(ip, TestPort);
+			client = ENetLibrary.Connect("10.59.190.146", TestPort);
 			bool isRunning = true;
 
 			// Timer set for a minute
@@ -44,7 +46,7 @@ namespace FlareNetTests
 
 			while (isRunning)
 			{
-				FlareNetwork.Update();
+				ENetLibrary.Update();
 
 				if (client.IsUnableToConnect)
 					break;

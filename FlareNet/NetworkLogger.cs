@@ -1,4 +1,6 @@
-﻿namespace FlareNet.Debug
+﻿using FlareNet.Debug;
+
+namespace FlareNet
 {
 	public static class NetworkLogger
 	{
@@ -18,6 +20,7 @@
 		private const string ClientStart = "FlareNet client started";
 		private const string ClientStop = "FlareNet client stopped";
 		private const string ClientDisconnect = "FlareNet client disconnected";
+		private const string ClientConnect = "FlareNet client connected";
 		private const string ClientTimeout = "FlareNet client timed out";
 
 		/// <summary>
@@ -70,6 +73,9 @@
 				case NetworkLogEvent.ClientStop:
 					message = ClientStop;
 					break;
+				case NetworkLogEvent.ClientConnect:
+					message = ClientConnect;
+					break;
 				case NetworkLogEvent.ClientDisconnect:
 					message = ClientDisconnect;
 					break;
@@ -89,9 +95,9 @@
 
 		ClientStart,
 		ClientStop,
+		ClientConnect,
 		ClientDisconnect,
 		ClientTimeout,
-		ClientConnect
 	}
 
 	public enum LogLevel

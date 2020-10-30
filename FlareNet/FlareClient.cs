@@ -1,7 +1,8 @@
 ﻿using ENet;
-using FlareNet.Debug;
+using FlareNet.Client;
+using System.Threading;
 
-namespace FlareNet.Client
+namespace FlareNet
 {
 	public class FlareClient : FlareClientBase
 	{
@@ -13,65 +14,84 @@ namespace FlareNet.Client
 		protected Host Host { get; set; }
 		protected Address Address { get; set; }
 		internal readonly MessageHandler MessageHandler = new MessageHandler();
+		private Thread updateThread;
+		private bool isRunning;
 
-		public FlareClient(string ip, ushort port)
+		public FlareClient(string ip, ushort port) : base()
 		{
-			FlareNetwork.InitializeLibrary();
-			// Setup the address
-			Address = new Address() { Port = port };
-			Address.SetHost(ip);
-
 			// Setup the host
 			Host = new Host();
 			Host.Create();
 
-			// Subscribe for network updates
-			FlareNetwork.ClientUpdate += Update;
+			// Setup the address
+			var Address = new Address() { Port = port };
+			Address.SetHost(ip);
 
 			// Setup the peer
 			Peer = Host.Connect(Address);
+
+			StartUpdateThread();
+
+			NetworkLogger.Log("FlareNet client started");
 		}
 
-		protected FlareClient() { }
+		protected void StartUpdateThread()
+		{
+			updateThread = new Thread(Update);
+			isRunning = true;
+			updateThread.Start();
+		}
+
+		protected FlareClient() { ENetLibrary.InitializeLibrary(); }
 
 		#region Updates
 
 		internal void Update()
 		{
-			// Handle the next network event
-			while (PollClient(out Event networkEvent))
+			while (isRunning)
 			{
-				switch (networkEvent.Type)
+				bool polled = false;
+
+				while (!polled)
 				{
-					case EventType.Connect:
-						OnConnect(networkEvent);
-						break;
-					case EventType.Disconnect:
-						OnDisconnect(networkEvent);
-						break;
-					case EventType.Timeout:
-						OnTimeout(networkEvent);
-						break;
-					case EventType.Receive:
-						OnMessageReceived(networkEvent);
-						break;
-					case EventType.None:
-						break;
+					if (Host.CheckEvents(out Event e) <= 0)
+					{
+						if (Host.Service(15, out e) <= 0)
+							break;
+
+						polled = true;
+					}
+
+					switch (e.Type)
+					{
+						case EventType.None:
+							break;
+
+						case EventType.Connect:
+							OnConnect(e);
+							break;
+
+						case EventType.Disconnect:
+							OnDisconnect(e);
+							break;
+
+						case EventType.Timeout:
+							OnTimeout(e);
+							break;
+
+						case EventType.Receive:
+							OnMessageReceived(e);
+							e.Packet.Dispose();
+							break;
+					}
 				}
 			}
 
-			bool PollClient(out Event e)
-			{
-				int result;
-				
-				if ((result = Host.CheckEvents(out e)) <= 0)
-					result = Host.Service(0, out e);
+			// Clean up the host resources
+			Host.Flush();
+			Host.Dispose();
 
-				if (result < 0)
-					NetworkLogger.Log("FlareClient polling failure!", LogLevel.Error);
-
-				return result > 0;
-			}
+			ENetLibrary.DeinitializeLibrary();
 		}
 
 		protected virtual void OnConnect(Event e)
@@ -159,15 +179,7 @@ namespace FlareNet.Client
 
 		protected void Shutdown()
 		{
-			FlareNetwork.ClientUpdate -= Update;
-
-			if (Host != null)
-			{
-				Host.Flush();
-				Host.Dispose();
-			}
-
-			FlareNetwork.DeinitializeLibrary();
+			isRunning = false;
 		}
 	}
 }

@@ -1,8 +1,7 @@
 ﻿using ENet;
-using FlareNet.Client;
-using FlareNet.Debug;
+using FlareNet.Server;
 
-namespace FlareNet.Server
+namespace FlareNet
 {
 	public class FlareServer : FlareClient
 	{
@@ -15,10 +14,10 @@ namespace FlareNet.Server
 		public new ulong TotalDataIn => Host.BytesReceived;
 		public new ulong TotalDataOut => Host.BytesSent;
 
-		public FlareServer(ushort port, ServerConfig config)
+		public FlareServer(ushort port, ServerConfig config) : base()
 		{
-			Config = config;
-			FlareNetwork.InitializeLibrary();
+			Config = config ?? new ServerConfig();
+			
 			StartServer(port);
 		}
 
@@ -31,11 +30,11 @@ namespace FlareNet.Server
 
 			// Initialize the host
 			Host.Create(Address, Config.MaxConnections);
-			Host.SetMaxDuplicatePeers(2);
 
 			ClientManager = new FlareClientManager(Config.MaxConnections);
-			FlareNetwork.ClientUpdate += Update;
-			NetworkLogger.Log(Debug.NetworkLogEvent.ServerStart);
+			StartUpdateThread();
+
+			NetworkLogger.Log(NetworkLogEvent.ServerStart);
 		}
 
 		#region Updates

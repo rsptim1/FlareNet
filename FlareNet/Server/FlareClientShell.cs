@@ -1,6 +1,7 @@
 ﻿using ENet;
+using FlareNet.Client;
 
-namespace FlareNet.Client
+namespace FlareNet.Server
 {
 	internal class FlareClientShell : FlareClientBase
 	{

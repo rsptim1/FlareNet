@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -10,7 +10,7 @@
 	
   <ItemGroup>
     <ProjectReference Include="..\NetStack\NetStack.csproj" />
-	<PackageReference Include="ENet-CSharp" Version="2.4.5" />
+	<PackageReference Include="ENet-CSharp" Version="2.4.3" />
   </ItemGroup>
 
 	<PropertyGroup>

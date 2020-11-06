@@ -1,5 +1,6 @@
 ﻿using ENet;
 using FlareNet.Client;
+using FlareNet.Server;
 using System.Threading;
 
 namespace FlareNet
@@ -9,13 +10,28 @@ namespace FlareNet
 		/// <summary>
 		/// Buffer for the incoming packets to copy their data to.
 		/// </summary> Note: value is roughly twice maximum safe packet size.
-		protected readonly byte[] receivePacketBuffer = new byte[1024];
+		protected internal readonly byte[] receivePacketBuffer = new byte[1024];
 
-		protected Host Host { get; set; }
-		protected Address Address { get; set; }
-		internal readonly MessageHandler MessageHandler = new MessageHandler();
+		protected internal Host Host { get; set; }
+		protected internal Address Address { get; set; }
+
+		private readonly MessageHandler MessageHandler = new MessageHandler();
 		private Thread updateThread;
 		private bool isRunning;
+
+		private OnClientConnected clientConnected;
+		public virtual event OnClientConnected ClientConnected
+		{
+			add => clientConnected += value;
+			remove => clientConnected -= value;
+		}
+
+		private OnClientDisconnected clientDisconnected;
+		public virtual event OnClientDisconnected ClientDisconnected
+		{
+			add => clientDisconnected += value;
+			remove => clientDisconnected -= value;
+		}
 
 		public FlareClient(string ip, ushort port) : base()
 		{
@@ -32,7 +48,7 @@ namespace FlareNet
 
 			StartUpdateThread();
 
-			NetworkLogger.Log("FlareNet client started");
+			NetworkLogger.Log(NetworkLogEvent.ClientStart);
 		}
 
 		protected void StartUpdateThread()
@@ -97,11 +113,13 @@ namespace FlareNet
 		protected virtual void OnConnect(Event e)
 		{
 			NetworkLogger.Log(NetworkLogEvent.ClientConnect);
+			clientConnected?.Invoke(this);
 		}
 
 		protected virtual void OnDisconnect(Event e)
 		{
 			NetworkLogger.Log(NetworkLogEvent.ClientDisconnect);
+			clientDisconnected?.Invoke(this);
 		}
 
 		protected virtual void OnTimeout(Event e)

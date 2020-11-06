@@ -4,7 +4,7 @@ namespace FlareNet.Client
 {
 	public abstract class FlareClientBase : IClient
 	{
-		public Peer Peer { get; internal set; }
+		internal Peer Peer { get; set; }
 		
 		public ulong TotalDataIn => Peer.BytesReceived;
 

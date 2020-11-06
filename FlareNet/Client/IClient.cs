@@ -1,6 +1,4 @@
-﻿using ENet;
-
-namespace FlareNet
+﻿namespace FlareNet
 {
 	public interface IClient
 	{
@@ -10,7 +8,5 @@ namespace FlareNet
 		ulong TotalDataIn { get; }
 		ulong TotalDataOut { get; }
 		uint Ping { get; }
-
-		Peer Peer { get; }
 	}
 }

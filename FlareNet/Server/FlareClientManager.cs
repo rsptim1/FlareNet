@@ -2,6 +2,9 @@
 
 namespace FlareNet.Server
 {
+	public delegate void OnClientConnected(IClient client);
+	public delegate void OnClientDisconnected(IClient client);
+
 	/// <summary>
 	/// Handles adding, removing and management of clients that are connected to the server.
 	/// </summary>
@@ -11,9 +14,6 @@ namespace FlareNet.Server
 
 		public int Count => connectedClients.Count;
 
-		public delegate void OnClientConnected(IClient client);
-		public delegate void OnClientDisconnected(IClient client);
-
 		/// <summary>
 		/// Invoked when a client connects to the server.
 		/// </summary>
@@ -22,9 +22,9 @@ namespace FlareNet.Server
 		/// <summary>
 		/// Invoked when a client disconnects from the server.
 		/// </summary>
-		public event OnClientConnected ClientDisconnected;
+		public event OnClientDisconnected ClientDisconnected;
 
-		public FlareClientManager(int maxConnections)
+		internal FlareClientManager(int maxConnections)
 		{
 			// Initialize the dictionary for clients
 			connectedClients = new Dictionary<uint, FlareClientShell>(maxConnections);

@@ -14,7 +14,19 @@ namespace FlareNet
 		public new ulong TotalDataIn => Host.BytesReceived;
 		public new ulong TotalDataOut => Host.BytesSent;
 
-		public FlareServer(ushort port, ServerConfig config) : base()
+		public override event OnClientConnected ClientConnected
+		{
+			add => ClientManager.ClientConnected += value;
+			remove => ClientManager.ClientConnected -= value;
+		}
+
+		public override event OnClientDisconnected ClientDisconnected
+		{
+			add => ClientManager.ClientDisconnected += value;
+			remove => ClientManager.ClientDisconnected -= value;
+		}
+
+		public FlareServer(ushort port, ServerConfig config = null) : base()
 		{
 			Config = config ?? new ServerConfig();
 			
@@ -44,7 +56,7 @@ namespace FlareNet
 			Peer peer = e.Peer;
 
 			NetworkLogger.Log($"Client [{peer.ID}] connected from [{peer.IP}]");
-			ClientManager.AddClient(new FlareClientShell(peer));
+			ClientManager?.AddClient(new FlareClientShell(peer));
 		}
 
 		protected override void OnDisconnect(Event e)
@@ -52,7 +64,7 @@ namespace FlareNet
 			Peer peer = e.Peer;
 
 			NetworkLogger.Log($"Client [{peer.ID}] disconnected from [{peer.IP}]");
-			ClientManager.RemoveClient(peer.ID);
+			ClientManager?.RemoveClient(peer.ID);
 		}
 
 		protected override void OnTimeout(Event e)
@@ -60,7 +72,7 @@ namespace FlareNet
 			Peer peer = e.Peer;
 
 			NetworkLogger.Log($"Client [{peer.ID}] timeout from [{peer.IP}]");
-			ClientManager.RemoveClient(peer.ID);
+			ClientManager?.RemoveClient(peer.ID);
 		}
 
 		/// <summary>
@@ -93,7 +105,7 @@ namespace FlareNet
 		{
 			// Create packet and broadcast
 			Packet packet = default;
-			packet.Create(message.GetBufferArray());
+			packet.Create(message.GetBufferArray(), PacketFlags.Reliable);
 			Host.Broadcast(channel, ref packet);
 		}
 
@@ -103,22 +115,22 @@ namespace FlareNet
 		/// <param name="message">The message to send</param>
 		/// <param name="clients">The clients to send to</param>
 		/// <param name="channel">The channel to send the message through</param>
-		public void SendMessage(Message message, IClient[] clients, byte channel = 0)
-		{
-			// Extract the array of peers from the clients
-			// TODO: Figure out a more efficient way for this.
-			int l = clients.Length;
-			Peer[] peers = new Peer[l];
-			for (int i = 0; i < l; ++i)
-			{
-				peers[i] = clients[i].Peer;
-			}
+		//public void SendMessage(Message message, IClient[] clients, byte channel = 0)
+		//{
+		//	// Extract the array of peers from the clients
+		//	// TODO: Figure out a more efficient way for this.
+		//	int l = clients.Length;
+		//	Peer[] peers = new Peer[l];
+		//	for (int i = 0; i < l; ++i)
+		//	{
+		//		peers[i] = clients[i].Peer;
+		//	}
 
-			// Create packet and send to selected clients
-			Packet packet = default;
-			packet.Create(message.GetBufferArray(), PacketFlags.Reliable);
-			Host.Broadcast(channel, ref packet, peers);
-		}
+		//	// Create packet and send to selected clients
+		//	Packet packet = default;
+		//	packet.Create(message.GetBufferArray(), PacketFlags.Reliable);
+		//	Host.Broadcast(channel, ref packet, peers);
+		//}
 
 		#endregion
 

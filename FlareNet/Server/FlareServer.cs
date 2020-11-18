@@ -3,7 +3,7 @@ using FlareNet.Server;
 
 namespace FlareNet
 {
-	public class FlareServer : FlareClient
+	public sealed class FlareServer : FlareClient
 	{
 		internal FlareClientManager ClientManager { get; private set; }
 
@@ -75,10 +75,6 @@ namespace FlareNet
 			ClientManager?.RemoveClient(peer.ID);
 		}
 
-		/// <summary>
-		/// Called when the server receives a message from a client.
-		/// </summary>
-		/// <param name="e"></param>
 		protected override void OnMessageReceived(Event e)
 		{
 			NetworkLogger.Log($"Packet from [{e.Peer.IP}] ({e.Peer.ID}) " +

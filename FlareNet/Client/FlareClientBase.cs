@@ -6,22 +6,35 @@ namespace FlareNet.Client
 	{
 		internal Peer Peer { get; set; }
 		
+		/// <summary>
+		/// The total bytes recieved.
+		/// </summary>
 		public ulong TotalDataIn => Peer.BytesReceived;
 
+		/// <summary>
+		/// The total bytes sent.
+		/// </summary>
 		public ulong TotalDataOut => Peer.BytesSent;
 
+		/// <summary>
+		/// The ID of this client.
+		/// </summary>
 		public uint Id => Peer.ID;
 
+		/// <summary>
+		/// The round trip time.
+		/// </summary>
 		public uint Ping => Peer.RoundTripTime;
 
-		public PeerState ClientState => Peer.State;
-
+		/// <summary>
+		/// The IP of this client.
+		/// </summary>
 		public string IpAddress => Peer.IP;
 
+		/// <summary>
+		/// The port used.
+		/// </summary>
 		public ushort Port => Peer.Port;
-
-		public bool IsConnected => Peer.State == PeerState.Connected || Peer.State == PeerState.ConnectionSucceeded;
-		public bool IsUnableToConnect => Peer.State == PeerState.Disconnected;
 
 		public abstract void Disconnect();
 	}

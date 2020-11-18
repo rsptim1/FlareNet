@@ -33,7 +33,14 @@ namespace FlareNet
 			remove => clientDisconnected -= value;
 		}
 
-		public FlareClient(string ip, ushort port) : base()
+		protected FlareClient() { ENetLibrary.InitializeLibrary(); }
+
+		/// <summary>
+		/// Create a FlareClient and connect by IP and port.
+		/// </summary>
+		/// <param name="ip">The address to connnect to</param>
+		/// <param name="port">The port to connect with</param>
+		public FlareClient(string ip, ushort port) : this()
 		{
 			// Setup the host
 			Host = new Host();
@@ -57,8 +64,6 @@ namespace FlareNet
 			isRunning = true;
 			updateThread.Start();
 		}
-
-		protected FlareClient() { ENetLibrary.InitializeLibrary(); }
 
 		#region Updates
 

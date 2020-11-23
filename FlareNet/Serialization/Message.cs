@@ -54,11 +54,11 @@ namespace FlareNet
 		// TODO: Clean up this region into something less cancer
 		#region Processing
 
-		public void Process<T>(ref T serializable) where T:ISerializable
+		public void Process<T>(ref T serializable) where T:ISerializable, new()
 		{
 			// If we're reading from the buffer, expect it to be null
 			if (serializable == null && !writing)
-				serializable = default;
+				serializable = new T();
 
 			serializable.Sync(this);
 		}

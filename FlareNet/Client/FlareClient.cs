@@ -10,7 +10,8 @@ namespace FlareNet
 		/// <summary>
 		/// Buffer for the incoming packets to copy their data to.
 		/// </summary> Note: value is roughly twice maximum safe packet size.
-		protected internal readonly byte[] receivePacketBuffer = new byte[1024];
+		protected internal readonly byte[] receivePacketBuffer = new byte[PacketBufferSize];
+		protected internal const int PacketBufferSize = 1024;
 
 		protected internal Host Host { get; set; }
 		protected internal Address Address { get; set; }
@@ -141,8 +142,11 @@ namespace FlareNet
 		protected void ProcessMessage(Event e, IClient client)
 		{
 			// Deserialize message data
-			e.Packet.CopyTo(receivePacketBuffer);
-			Message message = new Message(receivePacketBuffer, e.Packet.Length + 4);
+			Packet packet = e.Packet;
+			byte[] buffer = packet.Length > PacketBufferSize ? new byte[packet.Length] : receivePacketBuffer;
+
+			e.Packet.CopyTo(buffer);
+			Message message = new Message(buffer, e.Packet.Length + 4);
 
 			// Process the message and invoke any callback
 			MessageHandler.ProcessMessage(message, null);

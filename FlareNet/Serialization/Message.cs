@@ -38,10 +38,6 @@ namespace FlareNet
 			isWriting = false;
 		}
 
-		public Message(byte[] buffer) : this(buffer, buffer.Length)
-		{
-		}
-
 		/// <summary>
 		/// Create a Message to write to a buffer.
 		/// </summary>
@@ -66,7 +62,7 @@ namespace FlareNet
 		public void Process<T>(ref T serializable) where T : ISerializable
 		{
 			// If we're reading from the buffer, expect it to be null
-			if (IsReading)
+			if (serializable == null && IsReading)
 				serializable = Activator.CreateInstance<T>();
 
 			serializable.Sync(this);
@@ -76,9 +72,9 @@ namespace FlareNet
 		{
 			int length = IsReading ? Buffer.ReadInt() : serializables.Length;
 
-			if (IsReading) // If we're reading, expect the array to be null
+			if (serializables == null && IsReading) // If we're reading, expect the array to be null
 				serializables = Array.CreateInstance(typeof(T), length) as T[];
-			else
+			if (IsWriting)
 				Process(ref length);
 
 			for (int i = 0; i < length; ++i)
@@ -89,9 +85,9 @@ namespace FlareNet
 		{
 			int length = IsReading ? Buffer.ReadInt() : serializables.Count;
 
-			if (!isWriting) // If we're reading, expect the array to be null
+			if (serializables == null && IsReading) // If we're reading, expect the array to be null
 				serializables = Activator.CreateInstance(typeof(List<T>), length) as List<T>;
-			else
+			if (IsWriting)
 				Process(ref length);
 
 			for (int i = 0; i < length; ++i)
@@ -109,7 +105,7 @@ namespace FlareNet
 			Process(ref width);
 			Process(ref height);
 
-			if (!isWriting)
+			if (serializables == null && IsReading)
 				serializables = Array.CreateInstance(typeof(T), width, height) as T[,];
 
 			for (int x = 0; x < width; ++x)
@@ -120,13 +116,18 @@ namespace FlareNet
 		public void Process(ref byte value)
 		{
 			if (isWriting)
-			{
 				Buffer.Add(value);
-			}
 			else
-			{
 				value = Buffer.ReadByte();
-			}
+		}
+
+		public void Process(ref sbyte value)
+		{
+			// TODO: Handle sbyte in BitBuffer
+			if (IsWriting)
+				Buffer.Add(value);
+			else
+				value = (sbyte)Buffer.ReadShort();
 		}
 
 		public void Process(ref byte[] values)

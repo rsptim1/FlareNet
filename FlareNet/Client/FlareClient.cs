@@ -34,24 +34,26 @@ namespace FlareNet
 			remove => clientDisconnected -= value;
 		}
 
-		protected FlareClient() { ENetLibrary.InitializeLibrary(); }
+		protected FlareClient()
+		{
+			ENetLibrary.InitializeLibrary();
+			Host = new Host(); // New host is created anyway, do it with init
+		}
 
 		/// <summary>
 		/// Create a FlareClient and connect by IP and port.
 		/// </summary>
 		/// <param name="ip">The address to connnect to</param>
 		/// <param name="port">The port to connect with</param>
+		/// <param name="channelLimit">The number of channels</param>
 		public FlareClient(string ip, ushort port, int channelLimit) : this()
 		{
-			// Setup the host
-			Host = new Host();
+			// Create the host and address
 			Host.Create();
-
-			// Setup the address
 			var Address = new Address() { Port = port };
 			Address.SetHost(ip);
 
-			// Setup the peer
+			// Create the peer
 			Peer = Host.Connect(Address, channelLimit);
 
 			StartUpdateThread();
@@ -59,6 +61,11 @@ namespace FlareNet
 			NetworkLogger.Log(NetworkLogEvent.ClientStart);
 		}
 
+		/// <summary>
+		/// Create a FlareClient and connect by IP and port.
+		/// </summary>
+		/// <param name="ip">The address to connnect to</param>
+		/// <param name="port">The port to connect with</param>
 		public FlareClient(string ip, ushort port) : this(ip, port, ServerConfig.DefaultChannelCount)
 		{
 		}

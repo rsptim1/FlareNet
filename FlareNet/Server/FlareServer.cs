@@ -40,12 +40,8 @@ namespace FlareNet
 
 		private void StartServer(ushort port)
 		{
-			Host = new Host();
-
-			// Create the address for the host to use
+			// Create the address and host
 			Address = new Address { Port = port };
-
-			// Initialize the host
 			Host.Create(Address, Config.MaxConnections, Config.ChannelCount);
 
 			ClientManager = new FlareClientManager(Config.MaxConnections);

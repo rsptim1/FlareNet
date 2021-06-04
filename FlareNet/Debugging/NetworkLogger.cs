@@ -30,7 +30,7 @@ namespace FlareNet
 		/// <param name="level">The importance of the message</param>
 		public static void Log(string msg, LogLevel level = LogLevel.Message)
 		{
-			if (!Enabled || Output == null)
+			if (!Enabled || Output == null || string.IsNullOrEmpty(msg))
 				return;
 
 			switch (level)
@@ -82,6 +82,7 @@ namespace FlareNet
 				case NetworkLogEvent.ClientTimeout:
 					message = ClientTimeout;
 					break;
+				default: break;
 			}
 
 			Log(message, level);

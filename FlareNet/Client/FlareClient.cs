@@ -195,6 +195,11 @@ namespace FlareNet
 			Peer.Send(channel, ref packet);
 		}
 
+		public virtual void SendMessage(Message message, byte channel = 0, params IClient[] clients)
+		{
+			SendMessage(message, channel);
+		}
+
 		/// <summary>
 		/// Disconnect from the server and shut down.
 		/// </summary>

@@ -41,7 +41,7 @@ namespace FlareNet
 		/// </summary>
 		/// <param name="ip">The address to connnect to</param>
 		/// <param name="port">The port to connect with</param>
-		public FlareClient(string ip, ushort port) : this()
+		public FlareClient(string ip, ushort port, int channelLimit) : this()
 		{
 			// Setup the host
 			Host = new Host();
@@ -52,11 +52,15 @@ namespace FlareNet
 			Address.SetHost(ip);
 
 			// Setup the peer
-			Peer = Host.Connect(Address);
+			Peer = Host.Connect(Address, channelLimit);
 
 			StartUpdateThread();
 
 			NetworkLogger.Log(NetworkLogEvent.ClientStart);
+		}
+
+		public FlareClient(string ip, ushort port) : this(ip, port, ServerConfig.DefaultChannelCount)
+		{
 		}
 
 		protected void StartUpdateThread()

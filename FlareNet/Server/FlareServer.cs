@@ -26,10 +26,15 @@ namespace FlareNet
 			remove => ClientManager.ClientDisconnected -= value;
 		}
 
+		/// <summary>
+		/// Start a server on a given port.
+		/// </summary>
+		/// <param name="port">The port to use</param>
+		/// <param name="config">Optional server configuration</param>
 		public FlareServer(ushort port, ServerConfig config = null) : base()
 		{
 			Config = config ?? new ServerConfig();
-			
+
 			StartServer(port);
 		}
 
@@ -41,7 +46,7 @@ namespace FlareNet
 			Address = new Address { Port = port };
 
 			// Initialize the host
-			Host.Create(Address, Config.MaxConnections);
+			Host.Create(Address, Config.MaxConnections, Config.ChannelCount);
 
 			ClientManager = new FlareClientManager(Config.MaxConnections);
 			StartUpdateThread();

@@ -9,7 +9,7 @@ FlareNet is a lightweight high-level wrapper around ENet C#, providing a simple 
 - [x] Server-client connections
 - [ ] Unit tests
 - [ ] Encryption
-- [ ] Channels
+- [x] Channels
 - [ ] Packet flag options
 - [x] Logging
 - [ ] Real documentation

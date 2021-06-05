@@ -6,6 +6,8 @@ namespace FlareNet
 
 	internal class MessageHandler
 	{
+		private PayloadHandler PayloadHandler = new PayloadHandler();
+
 		private readonly Dictionary<ushort, FlareMessageCallback> callbacks = new Dictionary<ushort, FlareMessageCallback>();
 
 		/// <summary>
@@ -13,7 +15,7 @@ namespace FlareNet
 		/// </summary>
 		/// <param name="tag">The tag the callback will be invoked on</param>
 		/// <param name="callback">The function or delegate to be invoked</param>
-		public void RegisterCallback(ushort tag, FlareMessageCallback callback)
+		public void AddCallback(ushort tag, FlareMessageCallback callback)
 		{
 			if (callbacks.TryGetValue(tag, out var registeredCallback))
 			{
@@ -21,16 +23,19 @@ namespace FlareNet
 				registeredCallback -= callback;
 				registeredCallback += callback;
 
-				// Remove the existing from the dictionary, then add the new
-				callbacks.Remove(tag);
-				callbacks.Add(tag, registeredCallback);
+				// Refresh the existing callback in the dictionary
+				callbacks[tag] = registeredCallback;
 			}
 			else
 			{
-				// Create and add the callback
+				// Add the callback to the dictionary
 				callbacks.Add(tag, callback);
 			}
 		}
+
+		public void AddCallback<T>(ushort tag, FlarePayloadCallback<T> callback) where T : ISerializable => PayloadHandler.AddCallback<T>(callback);
+		public void RemoveCallback<T>(ushort tag, FlarePayloadCallback<T> callback) where T : ISerializable => PayloadHandler.RemoveCallback<T>(callback);
+		public void Poll() => PayloadHandler.Poll();
 
 		/// <summary>
 		/// Remove all callbacks associated with a tag.

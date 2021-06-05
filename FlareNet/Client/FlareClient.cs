@@ -172,9 +172,9 @@ namespace FlareNet
 		/// </summary>
 		/// <param name="tag">The tag to look for</param>
 		/// <param name="callback">The callback to invoke</param>
-		public void RegisterCallback(ushort tag, FlareMessageCallback callback)
+		public void AddCallback(ushort tag, FlareMessageCallback callback)
 		{
-			MessageHandler.RegisterCallback(tag, callback);
+			MessageHandler.AddCallback(tag, callback);
 		}
 
 		/// <summary>

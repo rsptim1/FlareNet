@@ -8,6 +8,11 @@
 		public static bool Enabled { get; private set; } = true;
 
 		/// <summary>
+		/// The minimum level to output. Anything below this value will be discarded.
+		/// </summary>
+		public static LogLevel OutputLevel { get; set; } = LogLevel.Message;
+
+		/// <summary>
 		/// The output interface used by the logger. This is set to a default value
 		/// and only needs to be changed if a different output method is desired.
 		/// </summary>
@@ -28,7 +33,7 @@
 		/// <param name="level">The importance of the message</param>
 		public static void Log(string msg, LogLevel level = LogLevel.Message)
 		{
-			if (!Enabled || Output == null || string.IsNullOrEmpty(msg))
+			if (!Enabled || Output == null || string.IsNullOrEmpty(msg) || level < OutputLevel)
 				return;
 
 			switch (level)
@@ -52,7 +57,7 @@
 		/// <param name="level">The importance of the event</param>
 		internal static void Log(NetworkLogEvent logEvent, LogLevel level = LogLevel.Message)
 		{
-			if (!Enabled)
+			if (!Enabled || level < OutputLevel)
 				return;
 
 			string message = "";

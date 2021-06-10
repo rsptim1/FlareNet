@@ -18,10 +18,7 @@ namespace FlareNet
 		public readonly ushort Tag;
 		internal readonly BitBuffer Buffer;
 
-		// True when writing to the buffer, false when reading
-		private readonly bool isWriting;
-
-		public bool IsWriting => isWriting;
+		public bool IsWriting { get; private set; }
 		public bool IsReading => !IsWriting;
 
 		/// <summary>
@@ -35,7 +32,7 @@ namespace FlareNet
 			Buffer.FromArray(buffer, length);
 			Tag = Buffer.ReadUShort();
 
-			isWriting = false;
+			IsWriting = false;
 		}
 
 		/// <summary>
@@ -47,7 +44,7 @@ namespace FlareNet
 			Buffer = new BitBuffer();
 			Buffer.Add(Tag = tag);
 
-			isWriting = true;
+			IsWriting = true;
 		}
 
 		internal byte[] GetBufferArray()
@@ -115,7 +112,7 @@ namespace FlareNet
 
 		public void Process(ref byte value)
 		{
-			if (isWriting)
+			if (IsWriting)
 				Buffer.Add(value);
 			else
 				value = Buffer.ReadByte();
@@ -145,7 +142,7 @@ namespace FlareNet
 
 		public void Process(ref short value)
 		{
-			if (isWriting)
+			if (IsWriting)
 				Buffer.Add(value);
 			else
 				value = Buffer.ReadShort();
@@ -166,7 +163,7 @@ namespace FlareNet
 
 		public void Process(ref ushort value)
 		{
-			if (isWriting)
+			if (IsWriting)
 				Buffer.Add(value);
 			else
 				value = Buffer.ReadUShort();
@@ -187,7 +184,7 @@ namespace FlareNet
 
 		public void Process(ref int value)
 		{
-			if (isWriting)
+			if (IsWriting)
 				Buffer.Add(value);
 			else
 				value = Buffer.ReadInt();
@@ -208,7 +205,7 @@ namespace FlareNet
 
 		public void Process(ref uint value)
 		{
-			if (isWriting)
+			if (IsWriting)
 				Buffer.Add(value);
 			else
 				value = Buffer.ReadUInt();
@@ -229,7 +226,7 @@ namespace FlareNet
 
 		public void Process(ref long value)
 		{
-			if (isWriting)
+			if (IsWriting)
 				Buffer.Add(value);
 			else
 				value = Buffer.ReadLong();
@@ -250,7 +247,7 @@ namespace FlareNet
 
 		public void Process(ref ulong value)
 		{
-			if (isWriting)
+			if (IsWriting)
 				Buffer.Add(value);
 			else
 				value = Buffer.ReadULong();
@@ -271,7 +268,7 @@ namespace FlareNet
 
 		public void Process(ref string value)
 		{
-			if (isWriting)
+			if (IsWriting)
 				Buffer.Add(value);
 			else
 				value = Buffer.ReadString();
@@ -292,7 +289,7 @@ namespace FlareNet
 
 		public void Process(ref bool value)
 		{
-			if (isWriting)
+			if (IsWriting)
 				Buffer.Add(value);
 			else
 				value = Buffer.ReadBool();
@@ -313,7 +310,7 @@ namespace FlareNet
 
 		public void Process(ref float value)
 		{
-			if (isWriting)
+			if (IsWriting)
 				Buffer.Add(HalfPrecision.Compress(value));
 			else
 				value = HalfPrecision.Decompress(Buffer.ReadUShort());

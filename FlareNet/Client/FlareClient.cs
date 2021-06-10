@@ -1,6 +1,5 @@
 ﻿using ENet;
-using FlareNet.Client;
-using FlareNet.Server;
+using FlareNet.Debug;
 using System.Threading;
 
 namespace FlareNet

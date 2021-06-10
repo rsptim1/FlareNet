@@ -1,4 +1,4 @@
-﻿namespace FlareNet.Server
+﻿namespace FlareNet
 {
 	public class ServerConfig
 	{

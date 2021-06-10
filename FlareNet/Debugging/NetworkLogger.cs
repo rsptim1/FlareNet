@@ -1,6 +1,4 @@
-﻿using FlareNet.Debug;
-
-namespace FlareNet
+﻿namespace FlareNet.Debug
 {
 	public static class NetworkLogger
 	{

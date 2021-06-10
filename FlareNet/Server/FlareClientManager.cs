@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using FlareNet.Debug;
+using System.Collections.Generic;
 
-namespace FlareNet.Server
+namespace FlareNet
 {
 	public delegate void OnClientConnected(IClient client);
 	public delegate void OnClientDisconnected(IClient client);

@@ -1,5 +1,5 @@
 ﻿using ENet;
-using FlareNet.Server;
+using FlareNet.Debug;
 
 namespace FlareNet
 {

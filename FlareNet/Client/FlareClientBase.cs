@@ -1,6 +1,6 @@
 ﻿using ENet;
 
-namespace FlareNet.Client
+namespace FlareNet
 {
 	public abstract class FlareClientBase : IClient
 	{

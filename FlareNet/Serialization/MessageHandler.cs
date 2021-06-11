@@ -6,8 +6,6 @@ namespace FlareNet
 
 	internal class MessageHandler
 	{
-		private PayloadHandler PayloadHandler = new PayloadHandler();
-
 		private readonly Dictionary<ushort, FlareMessageCallback> callbacks = new Dictionary<ushort, FlareMessageCallback>();
 
 		/// <summary>
@@ -33,10 +31,6 @@ namespace FlareNet
 			}
 		}
 
-		public void AddCallback<T>(ushort tag, FlarePayloadCallback<T> callback) where T : ISerializable => PayloadHandler.AddCallback<T>(callback);
-		public void RemoveCallback<T>(ushort tag, FlarePayloadCallback<T> callback) where T : ISerializable => PayloadHandler.RemoveCallback<T>(callback);
-		public void Poll() => PayloadHandler.Poll();
-
 		/// <summary>
 		/// Remove all callbacks associated with a tag.
 		/// </summary>
@@ -44,13 +38,9 @@ namespace FlareNet
 		public void RemoveCallback(ushort tag)
 		{
 			if (callbacks.ContainsKey(tag))
-			{
 				callbacks.Remove(tag);
-			}
 			else
-			{
 				NetworkLogger.Log("Cannot remove callback - no entry with the tag exists!", LogLevel.Error);
-			}
 		}
 
 		/// <summary>

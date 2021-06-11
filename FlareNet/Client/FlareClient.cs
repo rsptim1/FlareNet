@@ -16,6 +16,7 @@ namespace FlareNet
 		protected internal Address Address { get; set; }
 
 		private readonly MessageHandler MessageHandler = new MessageHandler();
+		private readonly PayloadHandler PayloadHandler = new PayloadHandler();
 		private Thread updateThread;
 		private bool isRunning;
 
@@ -71,8 +72,8 @@ namespace FlareNet
 
 		protected void StartUpdateThread()
 		{
-			updateThread = new Thread(Update);
 			isRunning = true;
+			updateThread = new Thread(Update);
 			updateThread.Start();
 		}
 
@@ -159,7 +160,8 @@ namespace FlareNet
 			Message message = new Message(buffer, e.Packet.Length + 4);
 
 			// Process the message and invoke any callback
-			MessageHandler.ProcessMessage(message, null);
+			//MessageHandler.ProcessMessage(message, null);
+			PayloadHandler.ProcessMessage(message);
 		}
 
 		#endregion
@@ -171,10 +173,15 @@ namespace FlareNet
 		/// </summary>
 		/// <param name="tag">The tag to look for</param>
 		/// <param name="callback">The callback to invoke</param>
-		public void RegisterCallback(ushort tag, FlareMessageCallback callback)
+		public void AddCallback(ushort tag, FlareMessageCallback callback)
 		{
-			MessageHandler.RegisterCallback(tag, callback);
+			MessageHandler.AddCallback(tag, callback);
 		}
+
+		public void AddCallback<T>(FlarePayloadCallback<T> c) where T : INetworkPayload => PayloadHandler.AddCallback(c);
+		public void RemoveCallback<T>(FlarePayloadCallback<T> c) where T : INetworkPayload => PayloadHandler.RemoveCallback(c);
+		public void ClearCallbacks<T>() where T : INetworkPayload => PayloadHandler.ClearCallbacks<T>();
+		public void PollMessages() => PayloadHandler.Poll();
 
 		/// <summary>
 		/// Remove all callbacks from being invoked when the respective tag is received.
@@ -196,6 +203,20 @@ namespace FlareNet
 		}
 
 		#endregion
+
+		public virtual void SendMessage<T>(T value, byte channel = 0) where T : ISerializable
+		{
+			var tag = NetworkTagAttribute.GetTag(typeof(T));
+
+			if (tag != null)
+			{
+				Message m = new Message(tag.Value);
+				m.Process(ref value);
+				SendMessage(m, channel);
+			}
+			else
+				NetworkLogger.Log("Cannot send a NetworkPayload with no NetworkTag!");
+		}
 
 		public virtual void SendMessage(Message message, byte channel = 0)
 		{

@@ -12,9 +12,7 @@ namespace FlareNet
 			if (!LibraryInitialized)
 			{
 				if (!Library.Initialize())
-				{
-					throw new System.Exception();
-				}
+					throw new System.Exception("ENet C# library unable to initialize!");
 
 				LibraryInitialized = true;
 			}
@@ -22,7 +20,7 @@ namespace FlareNet
 
 		internal static void DeinitializeLibrary()
 		{
-			// If it's initialized and there's no clients registered to update
+			// If it's initialized
 			if (LibraryInitialized)
 			{
 				Library.Deinitialize();

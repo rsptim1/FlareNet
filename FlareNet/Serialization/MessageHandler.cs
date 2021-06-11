@@ -14,7 +14,7 @@ namespace FlareNet
 		/// </summary>
 		/// <param name="tag">The tag the callback will be invoked on</param>
 		/// <param name="callback">The function or delegate to be invoked</param>
-		public void RegisterCallback(ushort tag, FlareMessageCallback callback)
+		public void AddCallback(ushort tag, FlareMessageCallback callback)
 		{
 			if (callbacks.TryGetValue(tag, out var registeredCallback))
 			{
@@ -22,13 +22,12 @@ namespace FlareNet
 				registeredCallback -= callback;
 				registeredCallback += callback;
 
-				// Remove the existing from the dictionary, then add the new
-				callbacks.Remove(tag);
-				callbacks.Add(tag, registeredCallback);
+				// Refresh the existing callback in the dictionary
+				callbacks[tag] = registeredCallback;
 			}
 			else
 			{
-				// Create and add the callback
+				// Add the callback to the dictionary
 				callbacks.Add(tag, callback);
 			}
 		}
@@ -40,13 +39,9 @@ namespace FlareNet
 		public void RemoveCallback(ushort tag)
 		{
 			if (callbacks.ContainsKey(tag))
-			{
 				callbacks.Remove(tag);
-			}
 			else
-			{
 				NetworkLogger.Log("Cannot remove callback - no entry with the tag exists!", LogLevel.Error);
-			}
 		}
 
 		/// <summary>

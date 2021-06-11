@@ -171,10 +171,9 @@ namespace FlareNet
 
 			// Kick all remaining clients off
 			var clients = ClientManager.GetAllClients();
-			for (int i = 0; i < clients.Length; ++i)
-			{
-				clients[i].Disconnect();
-			}
+			foreach (FlareClientShell client in clients)
+				client.Disconnect();
+
 			ClientManager = null;
 
 			// Shut the rest of the client down

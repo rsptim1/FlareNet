@@ -12,6 +12,8 @@ namespace FlareNet
 	{
 		private readonly Dictionary<ushort, Callback> payloadCallbacks = new Dictionary<ushort, Callback>();
 		private readonly Queue<MessagePayload> pollQueue = new Queue<MessagePayload>();
+		private readonly Queue<Action> registrationQueue = new Queue<Action>();
+		private bool isInvoking;
 
 		/// <summary>
 		/// Add a callback to listen for payloads of a given type.
@@ -20,23 +22,31 @@ namespace FlareNet
 		/// <param name="callback">The delegate to call</param>
 		public void AddCallback<T>(FlarePayloadCallback<T> callback) where T : INetworkPayload
 		{
-			var type = typeof(T);
-			var tag = NetworkTagAttribute.GetTag(type);
-
-			if (tag != null)
-			{
-				// Add the callback to the dictionary
-				if (!payloadCallbacks.TryGetValue(tag.Value, out var value))
-				{
-					// Create callback entry if it doesn't exist
-					value = new Callback(type);
-					payloadCallbacks.Add(tag.Value, value);
-				}
-
-				value.Add(callback);
-			}
+			if (!isInvoking)
+				Add(callback);
 			else
-				NetworkLogger.Log("Cannot add callbacks for types with no NetworkTag!");
+				registrationQueue.Enqueue(() => Add(callback));
+
+			void Add<P>(FlarePayloadCallback<P> c) where P : INetworkPayload
+			{
+				var type = typeof(P);
+				var tag = NetworkTagAttribute.GetTag(type);
+
+				if (tag != null)
+				{
+					// Add the callback to the dictionary
+					if (!payloadCallbacks.TryGetValue(tag.Value, out var value))
+					{
+						// Create callback entry if it doesn't exist
+						value = new Callback(type);
+						payloadCallbacks.Add(tag.Value, value);
+					}
+
+					value.Add(c);
+				}
+				else
+					NetworkLogger.Log("Cannot add callbacks for types with no NetworkTag!");
+			}
 		}
 
 		/// <summary>
@@ -46,13 +56,21 @@ namespace FlareNet
 		/// <param name="callback">The delegate to remove</param>
 		public void RemoveCallback<T>(FlarePayloadCallback<T> callback) where T : INetworkPayload
 		{
-			var tag = NetworkTagAttribute.GetTag(typeof(T));
-
-			// Remove the callback from the dictionary
-			if (tag != null && payloadCallbacks.TryGetValue(tag.Value, out var value))
-				value.Remove(callback);
+			if (!isInvoking)
+				Remove(callback);
 			else
-				NetworkLogger.Log("Cannot remove callback - no entry for this payload exists");
+				registrationQueue.Enqueue(() => Remove(callback));
+
+			void Remove<P>(FlarePayloadCallback<P> c) where P : INetworkPayload
+			{
+				var tag = NetworkTagAttribute.GetTag(typeof(P));
+
+				// Remove the callback from the dictionary
+				if (tag != null && payloadCallbacks.TryGetValue(tag.Value, out var value))
+					value.Remove(c);
+				else
+					NetworkLogger.Log("Cannot remove callback - no entry for this payload exists");
+			}
 		}
 
 		/// <summary>
@@ -61,10 +79,18 @@ namespace FlareNet
 		/// <typeparam name="T">The type to remove callbacks for</typeparam>
 		public void ClearCallbacks<T>() where T : INetworkPayload
 		{
-			var tag = NetworkTagAttribute.GetTag(typeof(T));
+			if (!isInvoking)
+				Clear<T>();
+			else
+				registrationQueue.Enqueue(() => Clear<T>());
 
-			if (tag != null && payloadCallbacks.ContainsKey(tag.Value))
-				payloadCallbacks.Remove(tag.Value);
+			void Clear<P>() where P : INetworkPayload
+			{
+				var tag = NetworkTagAttribute.GetTag(typeof(P));
+
+				if (tag != null && payloadCallbacks.ContainsKey(tag.Value))
+					payloadCallbacks.Remove(tag.Value);
+			}
 		}
 
 		/// <summary>
@@ -105,8 +131,18 @@ namespace FlareNet
 		{
 			while (pollQueue.Count > 0)
 			{
+				isInvoking = true;
+
 				var payload = pollQueue.Dequeue();
-				payload.Callback.Invoke(payload.Value, delegateBuffer);
+				payload.Callback.Invoke(payload.Value);
+
+				isInvoking = false;
+			}
+
+			while (registrationQueue.Count > 0)
+			{
+				var action = registrationQueue.Dequeue();
+				action.Invoke();
 			}
 		}
 
@@ -115,8 +151,6 @@ namespace FlareNet
 			public INetworkPayload Value;
 			public Callback Callback;
 		}
-
-		private List<FlarePayloadCallback<INetworkPayload>> delegateBuffer = new List<FlarePayloadCallback<INetworkPayload>>(20);
 
 		private class Callback
 		{
@@ -142,15 +176,10 @@ namespace FlareNet
 					Values.Remove(key);
 			}
 
-			internal void Invoke(INetworkPayload value, List<FlarePayloadCallback<INetworkPayload>> buffer)
+			internal void Invoke(INetworkPayload value)
 			{
-				buffer.Clear();
-
 				foreach (var v in Values.Values)
-					buffer.Add(v);
-
-				for (int i = buffer.Count - 1; i >= 0; --i)
-					buffer[i].Invoke(value);
+					v.Invoke(value);
 			}
 		}
 	}

@@ -106,7 +106,7 @@ namespace FlareNet
 			while (pollQueue.Count > 0)
 			{
 				var payload = pollQueue.Dequeue();
-				payload.Callback.Invoke(payload.Value);
+				payload.Callback.Invoke(payload.Value, delegateBuffer);
 			}
 		}
 
@@ -115,6 +115,8 @@ namespace FlareNet
 			public INetworkPayload Value;
 			public Callback Callback;
 		}
+
+		private List<FlarePayloadCallback<INetworkPayload>> delegateBuffer = new List<FlarePayloadCallback<INetworkPayload>>(20);
 
 		private class Callback
 		{
@@ -140,10 +142,15 @@ namespace FlareNet
 					Values.Remove(key);
 			}
 
-			internal void Invoke(INetworkPayload value)
+			internal void Invoke(INetworkPayload value, List<FlarePayloadCallback<INetworkPayload>> buffer)
 			{
+				buffer.Clear();
+
 				foreach (var v in Values.Values)
-					v.Invoke(value);
+					buffer.Add(v);
+
+				for (int i = buffer.Count - 1; i >= 0; --i)
+					buffer[i].Invoke(value);
 			}
 		}
 	}

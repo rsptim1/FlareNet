@@ -1,16 +1,17 @@
 # FlareNet
 
-FlareNet is a lightweight high-level wrapper around ENet C#, providing a simple server-client reliable-UDP network. The focus of FlareNet is cleanliness and readability.
+FlareNet is a high-level wrapper for ENet C#, providing a simple server-client reliable-UDP network. The focus of FlareNet is cleanliness and readability.
 
 **This is an ongoing project and will continue to be updated.**
 
 ## Features
 
 - [x] Server-client connections
+- [ ] Client connection management
 - [x] Channels
 - [ ] Encryption
 - [ ] Throttling
-- [ ] Packet sending options
+- [x] Packet sending options
 - [x] Logging
 - [ ] Real documentation
 
@@ -22,7 +23,8 @@ FlareNet is not yet intended to be used for non-PC platforms.
 
 ## Known Issues
 
-- Message callbacks are invoked on FlareNet's polling thread. This will be changed to dump message data for processing by a separate thread.
+- PayloadHandler needs to be changed to use a ring buffer.
+- Sending a network payload involves grabbing the network tag every time.
 
 ## Getting Started
 
@@ -42,13 +44,15 @@ FlareClient client = new FlareClient("127.0.0.1", 2000);
 
 ### Processing data
 
-`Message.Process()` has overloads for almost every type that anyone could possibly want to be synced, and allows extension methods for types that FlareNet does not process (i.e. Unity's `Vector3` type).
+`Message.Process()` has overloads for almost every type that anyone could possibly want to be synced and allows extension methods for types that FlareNet does not process (i.e. Unity's `Vector3` type).
 
+To send data between server and client, an object implementing the `INetworkPayload` interface must be set up to process the variables to be sent or synced. This interface also requires implementation of the `ISerializable` interface, which can be used to make objects serializable.
 
-To send data between server and client, an object implementing the `ISerializable` interface should be set up to process the variables to be sent or synced. It *can* be done outside of an `ISerializable` container, but I wouldn't recommend it.
+Each network payload must have a `NetworkTag` attribute with a unique `ushort` identifier.
 
 ```cs
-class ExamplePayload : ISerializable
+[NetworkTag(101, PacketOptions.Reliable)]
+class ExamplePayload : INetworkPayload
 {
     private int exampleInt = 18;
     private string exampleString = "speeen";
@@ -64,47 +68,47 @@ class ExamplePayload : ISerializable
 }
 ```
 
-### Registering a message callback
+### Registering a payload callback
 
-Each unique network tag, represented as a `ushort`, can have callback methods to be invoked when a message with the respective tag is received from the server or a client.
+Callback methods to handle payloads a client receives can be added through the client. When a client receives a payload of the type a method is listening for, that method will be called when the client is polled.
 
-This will be simplified in the future, **expect it to change.**
-
-```csharp
-ExamplePayload example;
-const ushort Tag = 2000;
-
-void ExampleCallback(Message message, IClient client)
+```cs
+void ExampleCallback(ExamplePayload p)
 {
-    // The message is incoming, so the variable is given a value
-    message.Process(ref example);
+    // Use payload here
 }
 
-// To add the tag and callback to be invoked
-client.RegisterCallback(Tag, ExampleCallback);
+// Add a method to be called when a payload type is received
+client.AddCallback<ExamplePayload>(ExampleCallback);
 
-// To remove the callback so it is no longer invoked
-client.RemoveCallback(Tag, ExampleCallback);
+// Remove the method from being called
+client.RemoveCallback<ExamplePayload>(ExampleCallback);
 
-// To remove all callbacks for a tag
-client.RemoveCallback(Tag);
+// Clear all callbacks for a payload
+client.ClearCallbacks<ExamplePayload>();
 ```
 
-### Sending a message
+### Polling a client
 
-The tag attached to the message must be a unique `ushort` as to distinguish the data being sent and to invoke the correct registered callbacks. This will be changed in the future to require less manual work, expect it to change.
+Clients must be polled manually to ensure payload callbacks are called on the correct thread.
 
-Create a message as such, process the data to be sent, and send through the active server or client.
+**The performance impact of this operation has not been benchmarked.**
 
-Packet sending options and channel options are currently unimplemented.
+```cs
+client.PollMessages();
+```
 
-```csharp
-var example = new ExamplePayload();
+### Sending a network payload
 
-// Create and send the message through the client or server
-Message m = new Message(Tag);
-m.Process(ref example);
-server.SendMessage(m)
+Sending a payload over the network is very simple.
+
+Overload functions for more specific behaviour are available.
+
+```cs
+byte channel = 0;
+ExamplePayload p = new ExamplePayload();
+
+client.SendMessage(p, channel);
 ```
 
 ## Acknowledgements

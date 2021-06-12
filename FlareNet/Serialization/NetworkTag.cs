@@ -1,3 +1,4 @@
+using ENet;
 using System;
 
 namespace FlareNet
@@ -6,15 +7,26 @@ namespace FlareNet
 	public sealed class NetworkTagAttribute : Attribute
 	{
 		public readonly ushort Value;
+		private readonly PacketFlags packetOptions;
 
-		public NetworkTagAttribute(ushort tag)
+		public NetworkTagAttribute(ushort tag, PacketOptions options = PacketOptions.Reliable)
 		{
 			Value = tag;
+			packetOptions = (PacketFlags)options;
 		}
 
 		internal static NetworkTagAttribute GetTag(Type t)
 		{
 			return (NetworkTagAttribute)GetCustomAttribute(t, typeof(NetworkTagAttribute));
 		}
+
+		internal PacketFlags PacketFlags => packetOptions;
+	}
+
+	internal static class NetworkTags
+	{
+		internal const ushort ClientConnected = 65500;
+		internal const ushort ClientDisconnected = 65501;
+		internal const ushort IdAssignment = 65502;
 	}
 }

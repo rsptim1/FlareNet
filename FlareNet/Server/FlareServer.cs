@@ -9,22 +9,10 @@ namespace FlareNet
 
 		public ServerConfig Config { get; set; }
 
-		public new string IpAddress => Address.GetIP();
-		public new uint Port => Address.Port;
-		public new ulong TotalDataIn => Host.BytesReceived;
-		public new ulong TotalDataOut => Host.BytesSent;
-
-		public override event OnClientConnected ClientConnected
-		{
-			add => ClientManager.ClientConnected += value;
-			remove => ClientManager.ClientConnected -= value;
-		}
-
-		public override event OnClientDisconnected ClientDisconnected
-		{
-			add => ClientManager.ClientDisconnected += value;
-			remove => ClientManager.ClientDisconnected -= value;
-		}
+		public override string IpAddress => Address.GetIP();
+		public override ushort Port => Address.Port;
+		public override ulong TotalDataIn => Host.BytesReceived;
+		public override ulong TotalDataOut => Host.BytesSent;
 
 		/// <summary>
 		/// Start a server on a given port.
@@ -57,7 +45,13 @@ namespace FlareNet
 			Peer peer = e.Peer;
 
 			NetworkLogger.Log($"Client [{peer.ID}] connected from [{peer.IP}]");
-			ClientManager?.AddClient(new FlareClientShell(peer));
+
+			var client = new FlareClientShell(peer);
+			ClientManager?.AddClient(client);
+			PayloadHandler.PushPayload(new ClientConnected { Client = client });
+
+			// Send the client its ID manually
+			SendMessage(new IdAssignment { id = client.Id }, 0, client);
 		}
 
 		protected override void OnDisconnect(Event e)
@@ -66,6 +60,7 @@ namespace FlareNet
 
 			NetworkLogger.Log($"Client [{peer.ID}] disconnected from [{peer.IP}]");
 			ClientManager?.RemoveClient(peer.ID);
+			PayloadHandler.PushPayload(new ClientDisconnected { ClientId = peer.ID });
 		}
 
 		protected override void OnTimeout(Event e)
@@ -74,12 +69,13 @@ namespace FlareNet
 
 			NetworkLogger.Log($"Client [{peer.ID}] timeout from [{peer.IP}]");
 			ClientManager?.RemoveClient(peer.ID);
+			PayloadHandler.PushPayload(new ClientDisconnected { ClientId = peer.ID });
 		}
 
 		protected override void OnMessageReceived(Event e)
 		{
 			NetworkLogger.Log($"Packet from [{e.Peer.IP}] ({e.Peer.ID}) " +
-				$"on Channel [{e.ChannelID}] Length [{e.Packet.Length}]");
+				$"on Channel [{e.ChannelID}] with Length [{e.Packet.Length}]");
 
 			if (!ClientManager.TryGetClient(e.Peer.ID, out FlareClientShell client))
 			{
@@ -98,12 +94,26 @@ namespace FlareNet
 		/// </summary>
 		/// <param name="message">The message to send</param>
 		/// <param name="channel">The channel to send the message through</param>
-		public override void SendMessage(Message message, byte channel = 0)
+		protected internal override void SendMessage(Message message, PacketFlags flags, byte channel = 0)
 		{
 			// Create packet and broadcast
 			Packet packet = default;
-			packet.Create(message.GetBufferArray(), PacketFlags.Reliable);
+			packet.Create(message.GetBufferArray(), flags);
 			Host.Broadcast(channel, ref packet);
+		}
+
+		public override void SendMessage<T>(T value, byte channel = 0, params IClient[] clients)
+		{
+			var tag = NetworkTagAttribute.GetTag(typeof(T));
+
+			if (tag != null)
+			{
+				Message m = new Message(tag.Value);
+				m.Process(ref value);
+				SendMessage(m, tag.PacketFlags, channel, clients);
+			}
+			else
+				NetworkLogger.Log("Cannot send a NetworkPayload with no NetworkTag!");
 		}
 
 		/// <summary>
@@ -112,7 +122,7 @@ namespace FlareNet
 		/// <param name="message">The message to send</param>
 		/// <param name="clients">The clients to send to</param>
 		/// <param name="channel">The channel to send the message through</param>
-		public override void SendMessage(Message message, byte channel = 0, params IClient[] clients)
+		private void SendMessage(Message message, PacketFlags flags, byte channel, IClient[] clients)
 		{
 			// Extract the array of peers from the clients
 			// TODO: Figure out a more efficient way for this.
@@ -126,7 +136,7 @@ namespace FlareNet
 
 			// Create packet and send to selected clients
 			Packet packet = default;
-			packet.Create(message.GetBufferArray(), PacketFlags.Reliable);
+			packet.Create(message.GetBufferArray(), flags);
 			Host.Broadcast(channel, ref packet, peers);
 		}
 

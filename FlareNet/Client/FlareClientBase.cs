@@ -5,21 +5,21 @@ namespace FlareNet
 	public abstract class FlareClientBase : IClient
 	{
 		internal Peer Peer { get; set; }
-		
+
 		/// <summary>
 		/// The total bytes recieved.
 		/// </summary>
-		public ulong TotalDataIn => Peer.BytesReceived;
+		public virtual ulong TotalDataIn => Peer.BytesReceived;
 
 		/// <summary>
 		/// The total bytes sent.
 		/// </summary>
-		public ulong TotalDataOut => Peer.BytesSent;
+		public virtual ulong TotalDataOut => Peer.BytesSent;
 
 		/// <summary>
 		/// The ID of this client.
 		/// </summary>
-		public uint Id => Peer.ID;
+		public uint Id { get; internal set; }
 
 		/// <summary>
 		/// The round trip time.
@@ -29,12 +29,12 @@ namespace FlareNet
 		/// <summary>
 		/// The IP of this client.
 		/// </summary>
-		public string IpAddress => Peer.IP;
+		public virtual string IpAddress => Peer.IP;
 
 		/// <summary>
 		/// The port used.
 		/// </summary>
-		public ushort Port => Peer.Port;
+		public virtual ushort Port => Peer.Port;
 
 		public abstract void Disconnect();
 	}

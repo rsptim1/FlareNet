@@ -15,24 +15,9 @@ namespace FlareNet
 		protected internal Host Host { get; set; }
 		protected internal Address Address { get; set; }
 
-		private readonly MessageHandler MessageHandler = new MessageHandler();
-		private readonly PayloadHandler PayloadHandler = new PayloadHandler();
+		internal readonly PayloadHandler PayloadHandler = new PayloadHandler();
 		private Thread updateThread;
 		private bool isRunning;
-
-		private OnClientConnected clientConnected;
-		public virtual event OnClientConnected ClientConnected
-		{
-			add => clientConnected += value;
-			remove => clientConnected -= value;
-		}
-
-		private OnClientDisconnected clientDisconnected;
-		public virtual event OnClientDisconnected ClientDisconnected
-		{
-			add => clientDisconnected += value;
-			remove => clientDisconnected -= value;
-		}
 
 		protected FlareClient()
 		{
@@ -52,6 +37,9 @@ namespace FlareNet
 			Host.Create();
 			var Address = new Address() { Port = port };
 			Address.SetHost(ip);
+
+			// Set up listener for ID
+			AddCallback<IdAssignment>(AssignID);
 
 			// Create the peer
 			Peer = Host.Connect(Address, channelLimit);
@@ -75,6 +63,15 @@ namespace FlareNet
 			isRunning = true;
 			updateThread = new Thread(Update);
 			updateThread.Start();
+		}
+
+		private void AssignID(IdAssignment p)
+		{
+			// Don't listen for the ID anymore
+			RemoveCallback<IdAssignment>(AssignID);
+
+			Id = p.id;
+			PayloadHandler.PushPayload(new ClientConnected { Client = this });
 		}
 
 		#region Updates
@@ -130,18 +127,18 @@ namespace FlareNet
 		protected virtual void OnConnect(Event e)
 		{
 			NetworkLogger.Log(NetworkLogEvent.ClientConnect);
-			clientConnected?.Invoke(this);
 		}
 
 		protected virtual void OnDisconnect(Event e)
 		{
 			NetworkLogger.Log(NetworkLogEvent.ClientDisconnect);
-			clientDisconnected?.Invoke(this);
+			PayloadHandler.PushPayload(new ClientDisconnected { ClientId = Id });
 		}
 
 		protected virtual void OnTimeout(Event e)
 		{
 			NetworkLogger.Log(NetworkLogEvent.ClientTimeout);
+			PayloadHandler.PushPayload(new ClientDisconnected { ClientId = Id });
 		}
 
 		protected virtual void OnMessageReceived(Event e)
@@ -157,10 +154,9 @@ namespace FlareNet
 			byte[] buffer = packet.Length > PacketBufferSize ? new byte[packet.Length] : receivePacketBuffer;
 
 			e.Packet.CopyTo(buffer);
-			Message message = new Message(buffer, e.Packet.Length + 4);
+			Message message = new Message(buffer, e.Packet.Length);
 
 			// Process the message and invoke any callback
-			//MessageHandler.ProcessMessage(message, null);
 			PayloadHandler.ProcessMessage(message);
 		}
 
@@ -169,40 +165,33 @@ namespace FlareNet
 		#region Callbacks
 
 		/// <summary>
-		/// Register a function or delegate to be invoked when a message with a tag is received.
+		/// Register a method to be invoked when a payload of a certain type is received.
 		/// </summary>
-		/// <param name="tag">The tag to look for</param>
-		/// <param name="callback">The callback to invoke</param>
-		public void AddCallback(ushort tag, FlareMessageCallback callback)
-		{
-			MessageHandler.AddCallback(tag, callback);
-		}
-
+		/// <typeparam name="T">The payload type to listen for</typeparam>
+		/// <param name="c">The method to call</param>
 		public void AddCallback<T>(FlarePayloadCallback<T> c) where T : INetworkPayload => PayloadHandler.AddCallback(c);
+
+		/// <summary>
+		/// Remove a function from being invoked when a payload of a certain type is received.
+		/// </summary>
+		/// <typeparam name="T">The payload type being listened for</typeparam>
+		/// <param name="c">The method to remove</param>
 		public void RemoveCallback<T>(FlarePayloadCallback<T> c) where T : INetworkPayload => PayloadHandler.RemoveCallback(c);
+
+		/// <summary>
+		/// Clear all listeners for a payload type.
+		/// </summary>
+		/// <typeparam name="T">The payload type to clear</typeparam>
 		public void ClearCallbacks<T>() where T : INetworkPayload => PayloadHandler.ClearCallbacks<T>();
+
+		/// <summary>
+		/// Poll the client for received payloads.
+		/// </summary>
 		public void PollMessages() => PayloadHandler.Poll();
 
-		/// <summary>
-		/// Remove all callbacks from being invoked when the respective tag is received.
-		/// </summary>
-		/// <param name="tag">The tag to remove callbacks from</param>
-		public void RemoveCallback(ushort tag)
-		{
-			MessageHandler.RemoveCallback(tag);
-		}
-
-		/// <summary>
-		/// Remove a callback from a tag.
-		/// </summary>
-		/// <param name="tag">The tag to remove the callback from</param>
-		/// <param name="callback">The callback to remove</param>
-		public void RemoveCallback(ushort tag, FlareMessageCallback callback)
-		{
-			MessageHandler.RemoveCallback(tag, callback);
-		}
-
 		#endregion
+
+		#region Messages
 
 		public virtual void SendMessage<T>(T value, byte channel = 0) where T : ISerializable
 		{
@@ -212,24 +201,31 @@ namespace FlareNet
 			{
 				Message m = new Message(tag.Value);
 				m.Process(ref value);
-				SendMessage(m, channel);
+				SendMessage(m, tag.PacketFlags, channel);
 			}
 			else
 				NetworkLogger.Log("Cannot send a NetworkPayload with no NetworkTag!");
 		}
 
-		public virtual void SendMessage(Message message, byte channel = 0)
+		protected virtual void SendMessage(Message message, byte channel = 0)
+		{
+			SendMessage(message, PacketFlags.Reliable, channel);
+		}
+
+		protected internal virtual void SendMessage(Message message, PacketFlags flags, byte channel)
 		{
 			// Create and send packet
 			Packet packet = default;
-			packet.Create(message.GetBufferArray(), PacketFlags.Reliable);
+			packet.Create(message.GetBufferArray(), flags);
 			Peer.Send(channel, ref packet);
 		}
 
-		public virtual void SendMessage(Message message, byte channel = 0, params IClient[] clients)
+		public virtual void SendMessage<T>(T value, byte channel = 0, params IClient[] clients) where T : ISerializable
 		{
-			SendMessage(message, channel);
+			SendMessage(value, channel);
 		}
+
+		#endregion
 
 		/// <summary>
 		/// Disconnect from the server and shut down.

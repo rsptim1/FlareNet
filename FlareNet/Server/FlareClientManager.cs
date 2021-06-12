@@ -3,9 +3,6 @@ using System.Collections.Generic;
 
 namespace FlareNet
 {
-	public delegate void OnClientConnected(IClient client);
-	public delegate void OnClientDisconnected(IClient client);
-
 	/// <summary>
 	/// Handles adding, removing and management of clients that are connected to the server.
 	/// </summary>
@@ -14,16 +11,6 @@ namespace FlareNet
 		private readonly Dictionary<uint, FlareClientShell> connectedClients;
 
 		public int Count => connectedClients.Count;
-
-		/// <summary>
-		/// Invoked when a client connects to the server.
-		/// </summary>
-		public event OnClientConnected ClientConnected;
-
-		/// <summary>
-		/// Invoked when a client disconnects from the server.
-		/// </summary>
-		public event OnClientDisconnected ClientDisconnected;
 
 		internal FlareClientManager(int maxConnections)
 		{
@@ -39,18 +26,12 @@ namespace FlareNet
 		{
 			uint id = client.Peer.ID;
 
+			// Add client to the connect clients dictionary
 			if (!connectedClients.ContainsKey(id))
-			{
-				// Add client to the connect clients dictionary
 				connectedClients.Add(id, client);
-				ClientConnected?.Invoke(client);
-			}
 			else
-			{
 				NetworkLogger.Log($"Unable to add already existing peer with ID [{id}] to ClientManager!", LogLevel.Error);
-			}
 		}
-
 
 		/// <summary>
 		/// Remove a client from the client manager by ID.
@@ -59,14 +40,9 @@ namespace FlareNet
 		internal void RemoveClient(uint id)
 		{
 			if (TryGetClient(id, out var client))
-			{
-				ClientDisconnected?.Invoke(client);
 				connectedClients.Remove(id);
-			}
 			else
-			{
 				NetworkLogger.Log($"Unable to remove nonexistent peer with ID [{id}] from ClientManager!", LogLevel.Error);
-			}
 		}
 
 		/// <summary>

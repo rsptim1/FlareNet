@@ -22,6 +22,7 @@ namespace FlareNet
 		public FlareServer(ushort port, ServerConfig config = null) : base()
 		{
 			Config = config ?? new ServerConfig();
+			PayloadHandler.Initialized = true;
 
 			StartServer(port);
 		}

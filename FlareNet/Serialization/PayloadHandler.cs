@@ -1,3 +1,4 @@
+using ENet;
 using FlareNet.Debug;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,9 @@ namespace FlareNet
 
 	internal class PayloadHandler
 	{
+		// Is the client fully initialized and can begin processing non-FlareNet payloads?
+		public bool Initialized { get; set; }
+
 		private readonly Dictionary<ushort, Callback> payloadCallbacks = new Dictionary<ushort, Callback>();
 		private readonly Queue<MessagePayload> pollQueue = new Queue<MessagePayload>();
 		private readonly Queue<Action> registrationQueue = new Queue<Action>();
@@ -22,10 +26,10 @@ namespace FlareNet
 		/// <param name="callback">The delegate to call</param>
 		public void AddCallback<T>(FlarePayloadCallback<T> callback) where T : INetworkPayload
 		{
-			if (!isInvoking)
-				Add(callback);
-			else
+			if (isInvoking)
 				registrationQueue.Enqueue(() => Add(callback));
+			else
+				Add(callback);
 
 			void Add<P>(FlarePayloadCallback<P> c) where P : INetworkPayload
 			{
@@ -45,7 +49,7 @@ namespace FlareNet
 					value.Add(c);
 				}
 				else
-					NetworkLogger.Log("Cannot add callbacks for types with no NetworkTag!");
+					NetworkLogger.Log("Cannot add callbacks for types with no NetworkTag!", LogLevel.Message);
 			}
 		}
 
@@ -56,20 +60,25 @@ namespace FlareNet
 		/// <param name="callback">The delegate to remove</param>
 		public void RemoveCallback<T>(FlarePayloadCallback<T> callback) where T : INetworkPayload
 		{
-			if (!isInvoking)
-				Remove(callback);
-			else
+			if (isInvoking)
 				registrationQueue.Enqueue(() => Remove(callback));
+			else
+				Remove(callback);
 
 			void Remove<P>(FlarePayloadCallback<P> c) where P : INetworkPayload
 			{
 				var tag = NetworkTagAttribute.GetTag(typeof(P));
 
 				// Remove the callback from the dictionary
-				if (tag != null && payloadCallbacks.TryGetValue(tag.Value, out var value))
-					value.Remove(c);
+				if (tag != null)
+				{
+					if (payloadCallbacks.TryGetValue(tag.Value, out var value))
+						value.Remove(c);
+					else
+						NetworkLogger.Log($"Payload type [{typeof(P).Name}] has no callbacks to remove!", LogLevel.Warning);
+				}
 				else
-					NetworkLogger.Log("Cannot remove callback - no entry for this payload exists");
+					NetworkLogger.Log("Cannot remove callbacks for types with no NetworkTag!", LogLevel.Warning);
 			}
 		}
 
@@ -79,17 +88,27 @@ namespace FlareNet
 		/// <typeparam name="T">The type to remove callbacks for</typeparam>
 		public void ClearCallbacks<T>() where T : INetworkPayload
 		{
-			if (!isInvoking)
-				Clear<T>();
-			else
+			if (isInvoking)
 				registrationQueue.Enqueue(() => Clear<T>());
+			else
+				Clear<T>();
 
 			void Clear<P>() where P : INetworkPayload
 			{
 				var tag = NetworkTagAttribute.GetTag(typeof(P));
 
-				if (tag != null && payloadCallbacks.ContainsKey(tag.Value))
-					payloadCallbacks.Remove(tag.Value);
+				if (tag != null)
+				{
+					if (payloadCallbacks.ContainsKey(tag.Value))
+					{
+						payloadCallbacks.Remove(tag.Value);
+						NetworkLogger.Log($"Cleared callbacks for payload type [{typeof(P).Name}]");
+					}
+					else
+						NetworkLogger.Log($"Payload type [{typeof(P).Name}] has no callbacks to clear!", LogLevel.Warning);
+				}
+				else
+					NetworkLogger.Log("Cannot clear callbacks for types with no NetworkTag!", LogLevel.Warning);
 			}
 		}
 
@@ -119,22 +138,20 @@ namespace FlareNet
 		/// <param name="message">The message to process</param>
 		public void ProcessMessage(Message message)
 		{
-			if (payloadCallbacks.TryGetValue(message.Tag, out var callback))
+			if (payloadCallbacks.TryGetValue(message.Tag, out var callback) && callback.Count > 0)
 			{
 				var value = (INetworkPayload)Activator.CreateInstance(callback.Type);
 				message.Process(ref value);
 				pollQueue.Enqueue(new MessagePayload { Value = value, Callback = callback });
 			}
 			else
-				NetworkLogger.Log("There are no listeners for messages with tag " + message.Tag, LogLevel.Warning);
-
-			message.Dispose();
+				NetworkLogger.Log($"There are no listeners for NetworkTag [{message.Tag}]!", LogLevel.Warning);
 		}
 
 		/// <summary>
 		/// Manually push a new payload into the queue.
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
+		/// <typeparam name="T">Payload type</typeparam>
 		/// <param name="payload">The payload to add</param>
 		internal void PushPayload<T>(T payload) where T : INetworkPayload
 		{
@@ -149,15 +166,27 @@ namespace FlareNet
 		/// </summary>
 		public void Poll()
 		{
+			isInvoking = true;
+
 			while (pollQueue.Count > 0)
 			{
-				isInvoking = true;
-
 				var payload = pollQueue.Dequeue();
-				payload.Callback.Invoke(payload.Value);
 
-				isInvoking = false;
+				if (!Initialized)
+				{
+					if (payload.Callback.Type == typeof(IdAssignment))
+					{
+						Initialized = true;
+						payload.Callback.Invoke(payload.Value);
+					}
+					else // Put it back in, senpai~
+						registrationQueue.Enqueue(() => pollQueue.Enqueue(payload));
+				}
+				else // If we are initialized, process it like normal
+					payload.Callback.Invoke(payload.Value);
 			}
+
+			isInvoking = false;
 
 			while (registrationQueue.Count > 0)
 			{
@@ -175,6 +204,8 @@ namespace FlareNet
 		private class Callback
 		{
 			public Type Type;
+			public string Name => Type.Name;
+			public int Count => Values.Count;
 
 			private readonly Dictionary<int, FlarePayloadCallback<INetworkPayload>> Values = new Dictionary<int, FlarePayloadCallback<INetworkPayload>>();
 
@@ -185,7 +216,19 @@ namespace FlareNet
 				int key = callback.Method.GetHashCode();
 
 				if (!Values.ContainsKey(key))
-					Values.Add(key, x => callback((T)x));
+				{
+					// This lambda needs benchmarking
+					Values.Add(key, x =>
+					{
+						if (x is T p)
+							callback(p);
+					});
+
+					if (Type.IsVisible)
+						NetworkLogger.Log($"Added delegate [{callback.Method.Name}] for payload type [{Name}]");
+				}
+				else
+					NetworkLogger.Log($"Delegate [{callback.Method.Name}] is already added to listen for payload type [{Name}]", LogLevel.Warning);
 			}
 
 			internal void Remove<T>(FlarePayloadCallback<T> callback) where T : INetworkPayload
@@ -193,11 +236,20 @@ namespace FlareNet
 				int key = callback.Method.GetHashCode();
 
 				if (Values.ContainsKey(key))
+				{
 					Values.Remove(key);
+
+					if (Type.IsVisible)
+						NetworkLogger.Log($"Removed delegate [{callback.Method.Name}] for payload type [{Name}]");
+				}
+				else
+					NetworkLogger.Log($"Delegate [{callback.Method.Name}] is not listening for payload type [{Name}]", LogLevel.Warning);
 			}
 
 			internal void Invoke(INetworkPayload value)
 			{
+				NetworkLogger.Log($"Invoking payload type [{Name}]");
+
 				foreach (var v in Values.Values)
 					v.Invoke(value);
 			}

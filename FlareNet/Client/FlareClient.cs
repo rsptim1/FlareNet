@@ -6,12 +6,6 @@ namespace FlareNet
 {
 	public class FlareClient : FlareClientBase
 	{
-		/// <summary>
-		/// Buffer for the incoming packets to copy their data to.
-		/// </summary> Note: value is roughly twice maximum safe packet size.
-		protected internal readonly byte[] receivePacketBuffer = new byte[PacketBufferSize];
-		protected internal const int PacketBufferSize = 1024;
-
 		protected internal Host Host { get; set; }
 		protected internal Address Address { get; set; }
 
@@ -145,21 +139,9 @@ namespace FlareNet
 
 		protected virtual void OnMessageReceived(Event e)
 		{
-			NetworkLogger.Log($"Packet from server on Channel [{e.ChannelID}] with Length [{e.Packet.Length}]");
-			ProcessMessage(e, null);
-		}
+			NetworkLogger.Log($"Packet from server on channel [{e.ChannelID}] with length [{e.Packet.Length}]");
 
-		protected void ProcessMessage(Event e, IClient client)
-		{
-			// Deserialize message data
-			Packet packet = e.Packet;
-			byte[] buffer = packet.Length > PacketBufferSize ? new byte[packet.Length] : receivePacketBuffer;
-
-			e.Packet.CopyTo(buffer);
-			Message message = new Message(buffer, e.Packet.Length);
-
-			// Process the message and invoke any callback
-			PayloadHandler.ProcessMessage(message);
+			PayloadHandler.ProcessPacket(e.Packet);
 		}
 
 		#endregion

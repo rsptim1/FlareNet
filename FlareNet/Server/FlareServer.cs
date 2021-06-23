@@ -101,15 +101,9 @@ namespace FlareNet
 
 		protected override void OnMessageReceived(Event e)
 		{
-			NetworkLogger.Log($"Packet from [{e.Peer.IP}] ({e.Peer.ID}) " +
-				$"on Channel [{e.ChannelID}] with Length [{e.Packet.Length}]");
+			NetworkLogger.Log($"Packet from client [{e.Peer.ID}] on channel [{e.ChannelID}] with length [{e.Packet.Length}]");
 
-			if (!ClientManager.TryGetClient(e.Peer.ID, out FlareClientShell client))
-			{
-				NetworkLogger.Log($"Message received from an unregistered client with ID [{e.Peer.ID}]", LogLevel.Warning);
-			}
-
-			ProcessMessage(e, client);
+			PayloadHandler.ProcessPacket(e.Packet);
 		}
 
 		#endregion

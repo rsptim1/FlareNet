@@ -28,5 +28,6 @@ namespace FlareNet
 		internal const ushort ClientConnected = 65500;
 		internal const ushort ClientDisconnected = 65501;
 		internal const ushort IdAssignment = 65502;
+		internal const ushort ClientAssigned = 65503;
 	}
 }

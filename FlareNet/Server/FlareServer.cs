@@ -43,33 +43,60 @@ namespace FlareNet
 		protected override void OnConnect(Event e)
 		{
 			Peer peer = e.Peer;
+			uint id = peer.ID;
 
-			NetworkLogger.Log($"Client [{peer.ID}] connected from [{peer.IP}]");
+			if (peer.IsSet)
+			{
+				NetworkLogger.Log($"Client [{id}] connected");
 
-			var client = new FlareClientShell(peer);
-			ClientManager?.AddClient(client);
-			PayloadHandler.PushPayload(new ClientConnected { Client = client });
+				var client = new FlareClientShell(peer);
+				ClientManager?.AddClient(client);
 
-			// Send the client its ID manually
-			SendMessage(new IdAssignment { id = client.Id }, 0, client);
+				// Send the client its ID manually
+				PayloadHandler.AddCallback<ClientAssigned>(PushClientConnected);
+				SendMessage(new IdAssignment { id = id }, 0, client);
+			}
+			else
+				NetworkLogger.Log("Unset peer connected. How?", LogLevel.Error);
+		}
+
+		private void PushClientConnected(ClientAssigned p)
+		{
+			NetworkLogger.Log("Client connection finalized");
+			PayloadHandler.RemoveCallback<ClientAssigned>(PushClientConnected);
+
+			if (ClientManager.TryGetClient(p.id, out var client))
+				PayloadHandler.PushPayload(new ClientConnected { Client = client });
 		}
 
 		protected override void OnDisconnect(Event e)
 		{
 			Peer peer = e.Peer;
+			uint id = peer.ID;
 
-			NetworkLogger.Log($"Client [{peer.ID}] disconnected from [{peer.IP}]");
-			ClientManager?.RemoveClient(peer.ID);
-			PayloadHandler.PushPayload(new ClientDisconnected { ClientId = peer.ID });
+			if (peer.IsSet)
+			{
+				NetworkLogger.Log($"Client [{id}] disconnected");
+				ClientManager?.RemoveClient(id);
+				PayloadHandler.PushPayload(new ClientDisconnected { ClientId = id });
+			}
+			else
+				NetworkLogger.Log("Unset peer disconnected!", LogLevel.Error);
 		}
 
 		protected override void OnTimeout(Event e)
 		{
 			Peer peer = e.Peer;
+			uint id = peer.ID;
 
-			NetworkLogger.Log($"Client [{peer.ID}] timeout from [{peer.IP}]");
-			ClientManager?.RemoveClient(peer.ID);
-			PayloadHandler.PushPayload(new ClientDisconnected { ClientId = peer.ID });
+			if (peer.IsSet)
+			{
+				NetworkLogger.Log($"Client [{id}] timed out");
+				ClientManager?.RemoveClient(id);
+				PayloadHandler.PushPayload(new ClientDisconnected { ClientId = id });
+			}
+			else
+				NetworkLogger.Log("Unset peer timed out!", LogLevel.Error);
 		}
 
 		protected override void OnMessageReceived(Event e)

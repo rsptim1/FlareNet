@@ -7,6 +7,7 @@ namespace FlareNet
 		public FlareClientShell(Peer peer)
 		{
 			Peer = peer;
+			Id = peer.ID;
 		}
 
 		public override void Disconnect()

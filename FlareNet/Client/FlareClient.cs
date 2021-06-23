@@ -71,6 +71,8 @@ namespace FlareNet
 			RemoveCallback<IdAssignment>(AssignID);
 
 			Id = p.id;
+
+			NetworkLogger.Log($"Client initialized with ID [{Id}]");
 			PayloadHandler.PushPayload(new ClientConnected { Client = this });
 		}
 
@@ -193,7 +195,7 @@ namespace FlareNet
 
 		#region Messages
 
-		public virtual void SendMessage<T>(T value, byte channel = 0) where T : ISerializable
+		public virtual void SendMessage<T>(T value, byte channel = 0) where T : INetworkPayload
 		{
 			var tag = NetworkTagAttribute.GetTag(typeof(T));
 

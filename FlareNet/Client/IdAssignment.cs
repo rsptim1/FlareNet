@@ -5,7 +5,18 @@
 	{
 		internal uint id;
 
-		public void Sync(Message message)
+		void ISerializable.Sync(Message message)
+		{
+			message.Process(ref id);
+		}
+	}
+
+	[NetworkTag(NetworkTags.IdAssignment)]
+	internal struct ClientAssigned : INetworkPayload
+	{
+		internal uint id;
+
+		void ISerializable.Sync(Message message)
 		{
 			message.Process(ref id);
 		}

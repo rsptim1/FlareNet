@@ -94,6 +94,26 @@ namespace FlareNet
 		}
 
 		/// <summary>
+		/// Buffer for the incoming packets to copy their data to.
+		/// </summary> Note: value is roughly twice maximum safe packet size.
+		protected internal readonly byte[] receivePacketBuffer = new byte[PacketBufferSize];
+		protected internal const int PacketBufferSize = 1024;
+
+		/// <summary>
+		/// Turn a packet into a message.
+		/// </summary>
+		/// <param name="p">The packet to process</param>
+		public void ProcessPacket(Packet p)
+		{
+			byte[] buffer = p.Length > PacketBufferSize ? new byte[p.Length] : receivePacketBuffer;
+			p.CopyTo(buffer);
+
+			// Process the message and invoke any listeners
+			using (var message = new Message(buffer, p.Length))
+				ProcessMessage(message);
+		}
+
+		/// <summary>
 		/// Turn a message into a payload if a listener for it exists.
 		/// </summary>
 		/// <param name="message">The message to process</param>

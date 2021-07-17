@@ -66,7 +66,7 @@ namespace FlareNet
 
 			Id = p.id;
 
-			NetworkLogger.Log($"Client initialized with ID [{Id}]");
+			NetworkLogger.Log($"Client initialized with ID [{Id}]", LogCategory.Connections);
 			PayloadHandler.PushPayload(new ClientConnected { Client = this });
 		}
 
@@ -139,7 +139,7 @@ namespace FlareNet
 
 		protected virtual void OnMessageReceived(Event e)
 		{
-			NetworkLogger.Log($"Packet from server on channel [{e.ChannelID}] with length [{e.Packet.Length}]");
+			NetworkLogger.Log($"Packet from server on channel [{e.ChannelID}] with length [{e.Packet.Length}]", LogCategory.Packets);
 
 			PayloadHandler.ProcessPacket(e.Packet);
 		}
@@ -188,7 +188,7 @@ namespace FlareNet
 				SendMessage(m, tag.PacketFlags, channel);
 			}
 			else
-				NetworkLogger.Log("Cannot send a NetworkPayload with no NetworkTag!");
+				NetworkLogger.Log("Cannot send a NetworkPayload with no NetworkTag!", LogCategory.PayloadProcessing);
 		}
 
 		protected virtual void SendMessage(Message message, byte channel = 0)

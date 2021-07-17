@@ -49,7 +49,7 @@ namespace FlareNet
 					value.Add(c);
 				}
 				else
-					NetworkLogger.Log("Cannot add callbacks for types with no NetworkTag!", LogLevel.Message);
+					NetworkLogger.Log("Cannot add callbacks for types with no NetworkTag!", LogCategory.PayloadCallbacks, LogLevel.Message);
 			}
 		}
 
@@ -75,10 +75,10 @@ namespace FlareNet
 					if (payloadCallbacks.TryGetValue(tag.Value, out var value))
 						value.Remove(c);
 					else
-						NetworkLogger.Log($"Payload type [{typeof(P).Name}] has no callbacks to remove!", LogLevel.Warning);
+						NetworkLogger.Log($"Payload type [{typeof(P).Name}] has no callbacks to remove!", LogCategory.PayloadCallbacks, LogLevel.Warning);
 				}
 				else
-					NetworkLogger.Log("Cannot remove callbacks for types with no NetworkTag!", LogLevel.Warning);
+					NetworkLogger.Log("Cannot remove callbacks for types with no NetworkTag!", LogCategory.PayloadCallbacks, LogLevel.Warning);
 			}
 		}
 
@@ -102,13 +102,13 @@ namespace FlareNet
 					if (payloadCallbacks.ContainsKey(tag.Value))
 					{
 						payloadCallbacks.Remove(tag.Value);
-						NetworkLogger.Log($"Cleared callbacks for payload type [{typeof(P).Name}]");
+						NetworkLogger.Log($"Cleared callbacks for payload type [{typeof(P).Name}]", LogCategory.PayloadCallbacks);
 					}
 					else
-						NetworkLogger.Log($"Payload type [{typeof(P).Name}] has no callbacks to clear!", LogLevel.Warning);
+						NetworkLogger.Log($"Payload type [{typeof(P).Name}] has no callbacks to clear!", LogCategory.PayloadCallbacks, LogLevel.Warning);
 				}
 				else
-					NetworkLogger.Log("Cannot clear callbacks for types with no NetworkTag!", LogLevel.Warning);
+					NetworkLogger.Log("Cannot clear callbacks for types with no NetworkTag!", LogCategory.PayloadCallbacks, LogLevel.Warning);
 			}
 		}
 
@@ -145,7 +145,7 @@ namespace FlareNet
 				pollQueue.Enqueue(new MessagePayload { Value = value, Callback = callback });
 			}
 			else
-				NetworkLogger.Log($"There are no listeners for NetworkTag [{message.Tag}]!", LogLevel.Warning);
+				NetworkLogger.Log($"There are no listeners for NetworkTag [{message.Tag}]!", LogCategory.PayloadProcessing, LogLevel.Warning);
 		}
 
 		/// <summary>
@@ -225,10 +225,10 @@ namespace FlareNet
 					});
 
 					if (Type.IsVisible)
-						NetworkLogger.Log($"Added delegate [{callback.Method.Name}] for payload type [{Name}]");
+						NetworkLogger.Log($"Added delegate [{callback.Method.Name}] for payload type [{Name}]", LogCategory.PayloadCallbacks);
 				}
 				else
-					NetworkLogger.Log($"Delegate [{callback.Method.Name}] is already added to listen for payload type [{Name}]", LogLevel.Warning);
+					NetworkLogger.Log($"Delegate [{callback.Method.Name}] is already added to listen for payload type [{Name}]", LogCategory.PayloadCallbacks, LogLevel.Warning);
 			}
 
 			internal void Remove<T>(FlarePayloadCallback<T> callback) where T : INetworkPayload
@@ -240,15 +240,15 @@ namespace FlareNet
 					Values.Remove(key);
 
 					if (Type.IsVisible)
-						NetworkLogger.Log($"Removed delegate [{callback.Method.Name}] for payload type [{Name}]");
+						NetworkLogger.Log($"Removed delegate [{callback.Method.Name}] for payload type [{Name}]", LogCategory.PayloadCallbacks);
 				}
 				else
-					NetworkLogger.Log($"Delegate [{callback.Method.Name}] is not listening for payload type [{Name}]", LogLevel.Warning);
+					NetworkLogger.Log($"Delegate [{callback.Method.Name}] is not listening for payload type [{Name}]", LogCategory.PayloadCallbacks, LogLevel.Warning);
 			}
 
 			internal void Invoke(INetworkPayload value)
 			{
-				NetworkLogger.Log($"Invoking payload type [{Name}]");
+				NetworkLogger.Log($"Invoking payload type [{Name}]", LogCategory.PayloadProcessing);
 
 				foreach (var v in Values.Values)
 					v.Invoke(value);

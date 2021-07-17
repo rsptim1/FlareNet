@@ -48,7 +48,7 @@ namespace FlareNet
 
 			if (peer.IsSet)
 			{
-				NetworkLogger.Log($"Client [{id}] connected");
+				NetworkLogger.Log($"Client [{id}] connected", LogCategory.Connections);
 
 				var client = new FlareClientShell(peer);
 				ClientManager?.AddClient(client);
@@ -58,12 +58,12 @@ namespace FlareNet
 				SendMessage(new IdAssignment { id = id }, 0, client);
 			}
 			else
-				NetworkLogger.Log("Unset peer connected. How?", LogLevel.Error);
+				NetworkLogger.Log("Unset peer connected. How?", LogCategory.Connections, LogLevel.Error);
 		}
 
 		private void PushClientConnected(ClientAssigned p)
 		{
-			NetworkLogger.Log("Client connection finalized");
+			NetworkLogger.Log("Client connection finalized", LogCategory.Connections);
 			PayloadHandler.RemoveCallback<ClientAssigned>(PushClientConnected);
 
 			if (ClientManager.TryGetClient(p.id, out var client))
@@ -77,12 +77,12 @@ namespace FlareNet
 
 			if (peer.IsSet)
 			{
-				NetworkLogger.Log($"Client [{id}] disconnected");
+				NetworkLogger.Log($"Client [{id}] disconnected", LogCategory.Connections);
 				ClientManager?.RemoveClient(id);
 				PayloadHandler.PushPayload(new ClientDisconnected { ClientId = id });
 			}
 			else
-				NetworkLogger.Log("Unset peer disconnected!", LogLevel.Error);
+				NetworkLogger.Log("Unset peer disconnected!", LogCategory.Connections, LogLevel.Error);
 		}
 
 		protected override void OnTimeout(Event e)
@@ -92,17 +92,17 @@ namespace FlareNet
 
 			if (peer.IsSet)
 			{
-				NetworkLogger.Log($"Client [{id}] timed out");
+				NetworkLogger.Log($"Client [{id}] timed out", LogCategory.Connections);
 				ClientManager?.RemoveClient(id);
 				PayloadHandler.PushPayload(new ClientDisconnected { ClientId = id });
 			}
 			else
-				NetworkLogger.Log("Unset peer timed out!", LogLevel.Error);
+				NetworkLogger.Log("Unset peer timed out!", LogCategory.Connections, LogLevel.Error);
 		}
 
 		protected override void OnMessageReceived(Event e)
 		{
-			NetworkLogger.Log($"Packet from client [{e.Peer.ID}] on channel [{e.ChannelID}] with length [{e.Packet.Length}]");
+			NetworkLogger.Log($"Packet from client [{e.Peer.ID}] on channel [{e.ChannelID}] with length [{e.Packet.Length}]", LogCategory.Packets);
 
 			PayloadHandler.ProcessPacket(e.Packet);
 		}
@@ -135,7 +135,7 @@ namespace FlareNet
 				SendMessage(m, tag.PacketFlags, channel, clients);
 			}
 			else
-				NetworkLogger.Log("Cannot send a NetworkPayload with no NetworkTag!");
+				NetworkLogger.Log("Cannot send a NetworkPayload with no NetworkTag!", LogCategory.PayloadProcessing, LogLevel.Warning);
 		}
 
 		/// <summary>

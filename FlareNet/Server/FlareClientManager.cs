@@ -30,7 +30,7 @@ namespace FlareNet
 			if (!connectedClients.ContainsKey(id))
 				connectedClients.Add(id, client);
 			else
-				NetworkLogger.Log($"Unable to add already existing peer with ID [{id}] to ClientManager!", LogLevel.Error);
+				NetworkLogger.Log($"Unable to add already existing peer with ID [{id}] to ClientManager!", LogCategory.Connections, LogLevel.Error);
 		}
 
 		/// <summary>
@@ -42,7 +42,7 @@ namespace FlareNet
 			if (TryGetClient(id, out var client))
 				connectedClients.Remove(id);
 			else
-				NetworkLogger.Log($"Unable to remove nonexistent peer with ID [{id}] from ClientManager!", LogLevel.Error);
+				NetworkLogger.Log($"Unable to remove nonexistent peer with ID [{id}] from ClientManager!", LogCategory.Connections, LogLevel.Error);
 		}
 
 		/// <summary>

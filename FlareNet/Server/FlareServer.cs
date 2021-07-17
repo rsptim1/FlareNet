@@ -88,7 +88,7 @@ namespace FlareNet
 		protected override void OnTimeout(Event e)
 		{
 			Peer peer = e.Peer;
-			uint id = peer.ID;
+			uint id = peer.ID + 1;
 
 			if (peer.IsSet)
 			{
@@ -102,7 +102,7 @@ namespace FlareNet
 
 		protected override void OnMessageReceived(Event e)
 		{
-			NetworkLogger.Log($"Packet from client [{e.Peer.ID}] on channel [{e.ChannelID}] with length [{e.Packet.Length}]", LogCategory.Packets);
+			NetworkLogger.Log($"Packet from client [{e.Peer.ID + 1}] on channel [{e.ChannelID}] with length [{e.Packet.Length}]", LogCategory.Packets);
 
 			PayloadHandler.ProcessPacket(e.Packet);
 		}

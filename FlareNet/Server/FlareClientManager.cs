@@ -24,7 +24,7 @@ namespace FlareNet
 		/// <param name="client"></param>
 		internal void AddClient(FlareClientShell client)
 		{
-			uint id = client.Peer.ID;
+			uint id = client.Id;
 
 			// Add client to the connect clients dictionary
 			if (!connectedClients.ContainsKey(id))

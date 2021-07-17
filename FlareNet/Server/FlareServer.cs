@@ -44,18 +44,18 @@ namespace FlareNet
 		protected override void OnConnect(Event e)
 		{
 			Peer peer = e.Peer;
-			uint id = peer.ID;
+			uint id = peer.ID + 1; // Increase by 1 so ID of 0 remains free for host
 
 			if (peer.IsSet)
 			{
 				NetworkLogger.Log($"Client [{id}] connected", LogCategory.Connections);
 
-				var client = new FlareClientShell(peer);
+				var client = new FlareClientShell(peer) { Id = id };
 				ClientManager?.AddClient(client);
 
 				// Send the client its ID manually
 				PayloadHandler.AddCallback<ClientAssigned>(PushClientConnected);
-				SendMessage(new IdAssignment { id = id }, 0, client);
+				SendMessage(new IdAssignment { id = id }, 0, peers:client.Peer);
 			}
 			else
 				NetworkLogger.Log("Unset peer connected. How?", LogCategory.Connections, LogLevel.Error);
@@ -73,7 +73,7 @@ namespace FlareNet
 		protected override void OnDisconnect(Event e)
 		{
 			Peer peer = e.Peer;
-			uint id = peer.ID;
+			uint id = peer.ID + 1;
 
 			if (peer.IsSet)
 			{
@@ -156,10 +156,29 @@ namespace FlareNet
 				peers[i] = client.Peer;
 			}
 
+			SendMessage(message, flags, channel, peers);
+		}
+
+		private void SendMessage(Message message, PacketFlags flags, byte channel, params Peer[] peers)
+		{
 			// Create packet and send to selected clients
 			Packet packet = default;
 			packet.Create(message.GetBufferArray(), flags);
 			Host.Broadcast(channel, ref packet, peers);
+		}
+
+		private void SendMessage<T>(T value, byte channel, params Peer[] peers) where T: INetworkPayload
+		{
+			var tag = NetworkTagAttribute.GetTag(typeof(T));
+
+			if (tag != null)
+			{
+				Message m = new Message(tag.Value);
+				m.Process(ref value);
+				SendMessage(m, tag.PacketFlags, channel, peers);
+			}
+			else
+				NetworkLogger.Log("Cannot send a NetworkPayload with no NetworkTag!", LogCategory.PayloadProcessing, LogLevel.Warning);
 		}
 
 		#endregion

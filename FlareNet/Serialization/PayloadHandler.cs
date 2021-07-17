@@ -213,7 +213,7 @@ namespace FlareNet
 
 			internal void Add<T>(FlarePayloadCallback<T> callback) where T : INetworkPayload
 			{
-				int key = callback.Method.GetHashCode();
+				int key = callback.GetHashCode();
 
 				if (!Values.ContainsKey(key))
 				{
@@ -233,7 +233,7 @@ namespace FlareNet
 
 			internal void Remove<T>(FlarePayloadCallback<T> callback) where T : INetworkPayload
 			{
-				int key = callback.Method.GetHashCode();
+				int key = callback.GetHashCode();
 
 				if (Values.ContainsKey(key))
 				{

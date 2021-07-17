@@ -168,7 +168,7 @@ namespace FlareNet
 		{
 			isInvoking = true;
 
-			while (pollQueue.Count > 0)
+			for (int i = pollQueue.Count; i > 0; --i)
 			{
 				var payload = pollQueue.Dequeue();
 
@@ -180,7 +180,7 @@ namespace FlareNet
 						payload.Callback.Invoke(payload.Value);
 					}
 					else // Put it back in, senpai~
-						registrationQueue.Enqueue(() => pollQueue.Enqueue(payload));
+						pollQueue.Enqueue(payload);
 				}
 				else // If we are initialized, process it like normal
 					payload.Callback.Invoke(payload.Value);

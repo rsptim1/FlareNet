@@ -67,7 +67,7 @@ namespace FlareNet
 			Id = p.id;
 
 			NetworkLogger.Log($"Client initialized with ID [{Id}]", LogCategory.Connections);
-			PayloadHandler.PushPayload(new ClientConnected { Client = this });
+			SendMessage(new ClientAssigned { id = Id });
 		}
 
 		#region Updates

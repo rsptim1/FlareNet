@@ -55,7 +55,7 @@ namespace FlareNet
 
 				// Send the client its ID manually
 				PayloadHandler.AddCallback<ClientAssigned>(PushClientConnected);
-				SendMessage(new IdAssignment { id = id }, 0, peers:client.Peer);
+				SendMessage(new IdAssignment { id = id }, 0, peers: client.Peer);
 			}
 			else
 				NetworkLogger.Log("Unset peer connected. How?", LogCategory.Connections, LogLevel.Error);
@@ -167,7 +167,7 @@ namespace FlareNet
 			Host.Broadcast(channel, ref packet, peers);
 		}
 
-		private void SendMessage<T>(T value, byte channel, params Peer[] peers) where T: INetworkPayload
+		private void SendMessage<T>(T value, byte channel, params Peer[] peers) where T : INetworkPayload
 		{
 			var tag = NetworkTagAttribute.GetTag(typeof(T));
 

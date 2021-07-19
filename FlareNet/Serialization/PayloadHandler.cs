@@ -217,7 +217,7 @@ namespace FlareNet
 
 				if (!Values.ContainsKey(key))
 				{
-					// This lambda needs benchmarking
+					// This cast needs benchmarking
 					Values.Add(key, x =>
 					{
 						if (x is T p)

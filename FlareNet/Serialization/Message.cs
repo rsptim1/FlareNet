@@ -26,28 +26,44 @@ namespace FlareNet
 		/// </summary>
 		/// <param name="buffer">The buffer to read from</param>
 		/// <param name="length">The length of the buffer to read</param>
-		internal Message(byte[] buffer, int length)
+		/// <param name="readTag">Read the first 16 bits as a network tag?</param>
+		public Message(byte[] buffer, int length, bool readTag = true)
 		{
 			Buffer = new BitBuffer();
 			Buffer.FromArray(buffer, length);
-			Tag = Buffer.ReadUShort();
+
+			if (readTag)
+				Tag = Buffer.ReadUShort();
 
 			IsWriting = false;
 		}
 
 		/// <summary>
-		/// Create a Message to write to a buffer.
+		/// Create a Message to read from a buffer.
+		/// </summary>
+		/// <param name="buffer">The buffer to read from</param>
+		/// <param name="readTag">Read the first 16 bits as a network tag?</param>
+		public Message(byte[] buffer, bool readTag = false) : this(buffer, buffer.Length, readTag) { }
+
+		/// <summary>
+		/// Create a Message to write to a buffer with a network tag.
 		/// </summary>
 		/// <param name="tag">The tag the message will be sent with</param>
-		public Message(ushort tag)
+		public Message(ushort tag) : this()
+		{
+			Buffer.Add(Tag = tag);
+		}
+
+		/// <summary>
+		/// Create a Message to write to a buffer.
+		/// </summary>
+		public Message()
 		{
 			Buffer = new BitBuffer();
-			Buffer.Add(Tag = tag);
-
 			IsWriting = true;
 		}
 
-		internal byte[] GetBufferArray()
+		public byte[] GetBufferArray()
 		{
 			byte[] result = new byte[Length + 4];
 			Buffer.ToArray(result);

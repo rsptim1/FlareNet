@@ -183,9 +183,11 @@ namespace FlareNet
 
 			if (tag != null)
 			{
-				Message m = new Message(tag.Value);
-				m.Process(ref value);
-				SendMessage(m, tag.PacketFlags, channel);
+				using (Message m = new Message(tag.Value))
+				{
+					m.Process(ref value);
+					SendMessage(m, tag.PacketFlags, channel);
+				}
 			}
 			else
 				NetworkLogger.Log("Cannot send a NetworkPayload with no NetworkTag!", LogCategory.PayloadProcessing);

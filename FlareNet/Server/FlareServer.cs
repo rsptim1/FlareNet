@@ -130,9 +130,11 @@ namespace FlareNet
 
 			if (tag != null)
 			{
-				Message m = new Message(tag.Value);
-				m.Process(ref value);
-				SendMessage(m, tag.PacketFlags, channel, clients);
+				using (Message m = new Message(tag.Value))
+				{
+					m.Process(ref value);
+					SendMessage(m, tag.PacketFlags, channel, clients);
+				}
 			}
 			else
 				NetworkLogger.Log("Cannot send a NetworkPayload with no NetworkTag!", LogCategory.PayloadProcessing, LogLevel.Warning);
@@ -173,9 +175,11 @@ namespace FlareNet
 
 			if (tag != null)
 			{
-				Message m = new Message(tag.Value);
-				m.Process(ref value);
-				SendMessage(m, tag.PacketFlags, channel, peers);
+				using (Message m = new Message(tag.Value))
+				{
+					m.Process(ref value);
+					SendMessage(m, tag.PacketFlags, channel, peers);
+				}
 			}
 			else
 				NetworkLogger.Log("Cannot send a NetworkPayload with no NetworkTag!", LogCategory.PayloadProcessing, LogLevel.Warning);

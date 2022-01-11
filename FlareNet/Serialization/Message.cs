@@ -43,7 +43,7 @@ namespace FlareNet
 		/// </summary>
 		/// <param name="buffer">The buffer to read from</param>
 		/// <param name="readTag">Read the first 16 bits as a network tag?</param>
-		public Message(byte[] buffer, bool readTag = false) : this(buffer, buffer.Length, readTag) { }
+		public Message(byte[] buffer, bool readTag = true) : this(buffer, buffer.Length, readTag) { }
 
 		/// <summary>
 		/// Create a Message to write to a buffer with a network tag.
@@ -83,7 +83,7 @@ namespace FlareNet
 
 		public void Process<T>(ref T[] serializables) where T : ISerializable
 		{
-			int length = IsReading ? Buffer.ReadInt() : serializables.Length;
+			int length = IsReading ? Buffer.ReadInt() : GetArrayLength(serializables);
 
 			if (serializables == null && IsReading) // If we're reading, expect the array to be null
 				serializables = Array.CreateInstance(typeof(T), length) as T[];
@@ -96,7 +96,7 @@ namespace FlareNet
 
 		public void Process<T>(ref List<T> serializables) where T : ISerializable
 		{
-			int length = IsReading ? Buffer.ReadInt() : serializables.Count;
+			int length = IsReading ? Buffer.ReadInt() : serializables == null ? 0 : serializables.Count;
 
 			if (serializables == null && IsReading) // If we're reading, expect the array to be null
 				serializables = Activator.CreateInstance(typeof(List<T>), length) as List<T>;
@@ -134,6 +134,19 @@ namespace FlareNet
 				value = Buffer.ReadByte();
 		}
 
+		public void Process(ref byte[] values)
+		{
+			int length = IsReading ? Buffer.ReadInt() : GetArrayLength(values);
+
+			if (IsReading && values == null) // If we're reading, expect the array to be null
+				values = new byte[length];
+			else
+				Process(ref length);
+
+			for (int i = 0; i < length; ++i)
+				Process(ref values[i]);
+		}
+
 		public void Process(ref sbyte value)
 		{
 			// TODO: Handle sbyte in BitBuffer
@@ -143,12 +156,12 @@ namespace FlareNet
 				value = (sbyte)Buffer.ReadShort();
 		}
 
-		public void Process(ref byte[] values)
+		public void Process(ref sbyte[] values)
 		{
-			int length = IsReading ? Buffer.ReadInt() : values.Length;
+			int length = IsReading ? Buffer.ReadInt() : GetArrayLength(values);
 
-			if (IsReading) // If we're reading, expect the array to be null
-				values = new byte[length];
+			if (IsReading && values == null) // If we're reading, expect the array to be null
+				values = new sbyte[length];
 			else
 				Process(ref length);
 
@@ -166,9 +179,9 @@ namespace FlareNet
 
 		public void Process(ref short[] values)
 		{
-			int length = IsReading ? Buffer.ReadInt() : values.Length;
+			int length = IsReading ? Buffer.ReadInt() : GetArrayLength(values);
 
-			if (IsReading) // If we're reading, expect the array to be null
+			if (IsReading && values == null) // If we're reading, expect the array to be null
 				values = new short[length];
 			else
 				Process(ref length);
@@ -187,9 +200,9 @@ namespace FlareNet
 
 		public void Process(ref ushort[] values)
 		{
-			int length = IsReading ? Buffer.ReadInt() : values.Length;
+			int length = IsReading ? Buffer.ReadInt() : GetArrayLength(values);
 
-			if (IsReading) // If we're reading, expect the array to be null
+			if (IsReading && values == null) // If we're reading, expect the array to be null
 				values = new ushort[length];
 			else
 				Process(ref length);
@@ -208,9 +221,9 @@ namespace FlareNet
 
 		public void Process(ref int[] values)
 		{
-			int length = IsReading ? Buffer.ReadInt() : values.Length;
+			int length = IsReading ? Buffer.ReadInt() : GetArrayLength(values);
 
-			if (IsReading) // If we're reading, expect the array to be null
+			if (IsReading && values == null) // If we're reading, expect the array to be null
 				values = new int[length];
 			else
 				Process(ref length);
@@ -229,9 +242,9 @@ namespace FlareNet
 
 		public void Process(ref uint[] values)
 		{
-			int length = IsReading ? Buffer.ReadInt() : values.Length;
+			int length = IsReading ? Buffer.ReadInt() : GetArrayLength(values);
 
-			if (IsReading) // If we're reading, expect the array to be null
+			if (IsReading && values == null) // If we're reading, expect the array to be null
 				values = new uint[length];
 			else
 				Process(ref length);
@@ -250,9 +263,9 @@ namespace FlareNet
 
 		public void Process(ref long[] values)
 		{
-			int length = IsReading ? Buffer.ReadInt() : values.Length;
+			int length = IsReading ? Buffer.ReadInt() : GetArrayLength(values);
 
-			if (IsReading) // If we're reading, expect the array to be null
+			if (IsReading && values == null) // If we're reading, expect the array to be null
 				values = new long[length];
 			else
 				Process(ref length);
@@ -271,9 +284,9 @@ namespace FlareNet
 
 		public void Process(ref ulong[] values)
 		{
-			int length = IsReading ? Buffer.ReadInt() : values.Length;
+			int length = IsReading ? Buffer.ReadInt() : GetArrayLength(values);
 
-			if (IsReading) // If we're reading, expect the array to be null
+			if (IsReading && values == null) // If we're reading, expect the array to be null
 				values = new ulong[length];
 			else
 				Process(ref length);
@@ -292,9 +305,9 @@ namespace FlareNet
 
 		public void Process(ref string[] values)
 		{
-			int length = IsReading ? Buffer.ReadInt() : values.Length;
+			int length = IsReading ? Buffer.ReadInt() : GetArrayLength(values);
 
-			if (IsReading) // If we're reading, expect the array to be null
+			if (IsReading && values == null) // If we're reading, expect the array to be null
 				values = new string[length];
 			else
 				Process(ref length);
@@ -313,9 +326,9 @@ namespace FlareNet
 
 		public void Process(ref bool[] values)
 		{
-			int length = IsReading ? Buffer.ReadInt() : values.Length;
+			int length = IsReading ? Buffer.ReadInt() : GetArrayLength(values);
 
-			if (IsReading) // If we're reading, expect the array to be null
+			if (IsReading && values == null) // If we're reading, expect the array to be null
 				values = new bool[length];
 			else
 				Process(ref length);
@@ -334,9 +347,9 @@ namespace FlareNet
 
 		public void Process(ref float[] values)
 		{
-			int length = IsReading ? Buffer.ReadInt() : values.Length;
+			int length = IsReading ? Buffer.ReadInt() : GetArrayLength(values);
 
-			if (IsReading) // If we're reading, expect the array to be null
+			if (IsReading && values == null) // If we're reading, expect the array to be null
 				values = new float[length];
 			else
 				Process(ref length);
@@ -351,5 +364,7 @@ namespace FlareNet
 		{
 			GC.SuppressFinalize(this);
 		}
+
+		private int GetArrayLength<T>(T[] a) => a == null ? 0 : a.Length;
 	}
 }

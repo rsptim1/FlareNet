@@ -58,7 +58,7 @@ namespace FlareNet
 
 		public byte[] GetBufferArray()
 		{
-			// +4 array length because of how BitBuffer.ToArray reads chunks
+			// +4 array length because of how BitBuffer.FromArray reads chunks
 			// Buffer must be longer than the data read
 			byte[] result = new byte[Length + 4];
 			Buffer.ToArray(result);

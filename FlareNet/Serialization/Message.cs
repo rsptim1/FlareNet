@@ -39,13 +39,6 @@ namespace FlareNet
 		}
 
 		/// <summary>
-		/// Create a Message to read from a buffer.
-		/// </summary>
-		/// <param name="buffer">The buffer to read from</param>
-		/// <param name="readTag">Read the first 16 bits as a network tag?</param>
-		public Message(byte[] buffer, bool readTag = true) : this(buffer, buffer.Length, readTag) { }
-
-		/// <summary>
 		/// Create a Message to write to a buffer with a network tag.
 		/// </summary>
 		/// <param name="tag">The tag the message will be sent with</param>
@@ -65,6 +58,8 @@ namespace FlareNet
 
 		public byte[] GetBufferArray()
 		{
+			// +4 array length because of how BitBuffer.ToArray reads chunks
+			// Buffer must be longer than the data read
 			byte[] result = new byte[Length + 4];
 			Buffer.ToArray(result);
 			return result;

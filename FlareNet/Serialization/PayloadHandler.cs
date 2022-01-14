@@ -125,7 +125,7 @@ namespace FlareNet
 		public void ProcessPacket(Packet p)
 		{
 			// +4 for new buffer because buffer must be larger than the data being read
-			byte[] buffer = p.Length > PacketBufferSize ? new byte[p.Length + 4] : receivePacketBuffer;
+			byte[] buffer = p.Length >= PacketBufferSize - 4 ? new byte[p.Length + 4] : receivePacketBuffer;
 			p.CopyTo(buffer);
 
 			// Process the message and invoke any listeners

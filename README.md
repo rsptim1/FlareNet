@@ -2,6 +2,8 @@
 
 FlareNet is a high-level wrapper for ENet C#, providing a simple server-client reliable-UDP network. The focus of FlareNet is cleanliness and readability.
 
+![alt text](https://i.imgur.com/qpRW2Qq.jpg)
+
 **This is an ongoing project and will continue to be updated.**
 
 ## Features
